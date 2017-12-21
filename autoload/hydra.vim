@@ -16,15 +16,26 @@ fu! s:all_combinations(sets) abort "{{{1
     return cbns
 endfu
 
-fu! s:create_hydra_heads(dir, tmpl, cbns) abort "{{{1
+fu! s:create_hydra_heads(dir, tmpl, cbns, sets) abort "{{{1
+    let ext = expand('%:e')
+    let cml = get(split(&l:cms, '%s'), 0, '')
     tabnew
     for i in range(1,len(a:cbns))
         "                      ┌ padding of `0`, so that the filenames are sorted as expected
         "                      │ when there are more than 10 possible combinations
         "                      │
-        exe 'e '.a:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i
-        let text = s:get_expanded_template(a:tmpl, a:cbns[i-1])
-        sil 0put =text
+        exe 'e '.a:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.'.'.ext
+        let cbn = a:cbns[i-1]
+        " compute a code standing for the current expanded template
+        " sth like 1010
+        let code = cml.' '.join(map(range(1, len(a:sets)),
+        \                           {i,v -> index(a:sets[i], cbn[i])})
+        \                       , '')
+        let expanded_tmpl = s:get_expanded_template(a:tmpl, a:cbns[i-1])
+
+        sil 0put =code
+        sil 1put =''
+        sil 2put =expanded_tmpl
         $d_
         update
         argadd %
@@ -157,7 +168,7 @@ fu! hydra#main(line1,line2) abort "{{{1
         else
             call s:empty_dir(dir)
         endif
-        call s:create_hydra_heads(dir, template, cbns)
+        call s:create_hydra_heads(dir, template, cbns, sets)
     catch
         return my_lib#catch_error()
     finally
