@@ -19,7 +19,10 @@ endfu
 fu! s:create_hydra_heads(dir, tmpl, cbns) abort "{{{1
     tabnew
     for i in range(1,len(a:cbns))
-        exe 'e '.a:dir.'/head'.i
+        "                      ┌ padding of `0`, so that the filenames are sorted as expected
+        "                      │ when there are more than 10 possible combinations
+        "                      │
+        exe 'e '.a:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i
         let text = s:get_expanded_template(a:tmpl, a:cbns[i-1])
         sil 0put =text
         $d_
