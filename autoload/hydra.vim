@@ -20,6 +20,7 @@ fu! hydra#analyse() abort "{{{1
     " TODO: finish
     " should regroup all comments in the result file
     " and associate each of them with all appropriate codes
+    return ''
 endfu
 
 fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
