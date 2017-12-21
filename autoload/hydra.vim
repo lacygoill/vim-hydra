@@ -16,27 +16,24 @@ fu! s:all_combinations(sets) abort "{{{1
     return cbns
 endfu
 
-fu! s:create_hydra_heads(dir, tmpl, cbns, sets) abort "{{{1
-    let ext = expand('%:e')
-    let cml = get(split(&l:cms, '%s'), 0, '')
-    tabnew
+fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
     for i in range(1,len(a:cbns))
         "                      ┌ padding of `0`, so that the filenames are sorted as expected
         "                      │ when there are more than 10 possible combinations
         "                      │
-        exe 'e '.a:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.'.'.ext
+        exe 'e '.a:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.'.'.a:ext
         let cbn = a:cbns[i-1]
         " compute a code standing for the current combination
         " sth like 1010
-        let code = cml.' '.join(map(range(1, len(a:sets)),
-        \                           {i,v -> index(a:sets[i], cbn[i])})
-        \                       , '')
+        let code = a:cml.' '.join(map(range(1, len(a:sets)),
+        \                             {i,v -> index(a:sets[i], cbn[i])})
+        \                         , '')
         let expanded_tmpl = s:get_expanded_template(a:tmpl, a:cbns[i-1])
 
-        sil 0put =code
-        sil 1put =''
-        sil 2put =expanded_tmpl
-        $d_
+        sil $put =code
+        sil $put =''
+        sil $put =expanded_tmpl
+        0d_
         update
         argadd %
     endfor
@@ -140,6 +137,8 @@ fu! hydra#main(line1,line2) abort "{{{1
     try
         let orig_id = win_getid()
         let view    = winsaveview()
+        let ext     = expand('%:e')
+        let cml     = get(split(&l:cms, '%s'), 0, '')
 
         let template = s:get_template(a:line1)
         if empty(matchstr(template, '%s'))
@@ -168,7 +167,10 @@ fu! hydra#main(line1,line2) abort "{{{1
         else
             call s:empty_dir(dir)
         endif
-        call s:create_hydra_heads(dir, template, cbns, sets)
+
+        tabnew
+        call s:prepare_result(dir)
+        call s:create_hydra_heads(dir, template, cbns, sets, ext, cml)
     catch
         return my_lib#catch_error()
     finally
@@ -179,6 +181,16 @@ endfu
 
 fu! s:msg(msg) abort "{{{1
     return 'echoerr '.string(a:msg)
+endfu
+
+fu! s:prepare_result(dir) abort "{{{1
+    exe 'e '.a:dir.'/result'
+    let a_list = ['lz    <expr>  redraw  timer  = 1', 'nolz  ∅       ∅       ∅      = 0']
+    sil $put='Code meaning:'
+    sil $put=  [''] + map(a_list, {i,v -> '    '.v}) + ['']
+    sil $put='Conclusion:'
+    0d_
+    update
 endfu
 
 fu! s:winrestview(view, orig_id) abort "{{{1
