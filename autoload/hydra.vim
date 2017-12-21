@@ -29,6 +29,7 @@ fu! s:create_hydra_heads(dir, tmpl, cbns) abort "{{{1
         update
     endfor
     exe 'Dirvish '.a:dir
+    1
 endfu
 
 fu! s:empty_dir(dir) abort "{{{1
