@@ -40,7 +40,10 @@ fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
         let expanded_tmpl = s:get_expanded_template(a:tmpl, a:cbns[i-1])
 
         sil $put =code
-        sil $put =['', a:cml.' Write your observation on the line below:', '']
+        sil $put =['',
+        \          a:cml.' Write your observation below (stop before END):',
+        \          a:cml.' END',
+        \          '']
         sil $put =expanded_tmpl
         0d_
         update
