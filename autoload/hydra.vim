@@ -33,7 +33,7 @@ fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
         let expanded_tmpl = s:get_expanded_template(a:tmpl, a:cbns[i-1])
 
         sil $put =code
-        sil $put =''
+        sil $put =['', a:cml.' Write your observation on the line below:', '']
         sil $put =expanded_tmpl
         0d_
         update
@@ -175,8 +175,11 @@ fu! hydra#main(line1,line2) abort "{{{1
         tabnew
         call s:create_hydra_heads(dir, template, cbns, sets, ext, cml)
         call s:prepare_result(dir, sets)
-        " load hydra file, then split window verticall, then load result file
-        e# | vs#
+        "┌ load head file
+        "│    ┌ split window vertically, and load result file
+        "│    │     ┌ get back to head file
+        "│    │     │
+        e# | vs# | wincmd p
     catch
         return my_lib#catch_error()
     finally
