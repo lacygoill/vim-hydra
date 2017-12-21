@@ -26,7 +26,7 @@ fu! s:create_hydra_heads(dir, tmpl, cbns, sets) abort "{{{1
         "                      │
         exe 'e '.a:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.'.'.ext
         let cbn = a:cbns[i-1]
-        " compute a code standing for the current expanded template
+        " compute a code standing for the current combination
         " sth like 1010
         let code = cml.' '.join(map(range(1, len(a:sets)),
         \                           {i,v -> index(a:sets[i], cbn[i])})
