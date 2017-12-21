@@ -98,7 +98,8 @@ fu! s:get_expanded_template(tmpl, cbn) abort "{{{1
     call map(texts, {j,v -> v =~# '%s'
     \?                          substitute(v, '%s', escape(a:cbn[j], '\~&'), '')
     \:                          v })
-    return join(texts, '')
+    " join the texts and trim ending whitespace on each line
+    return substitute(join(texts, ''), '\v\zs\s*\ze%($|\n)', '', 'g')
 endfu
 
 fu! s:get_sets(dlm_addr) abort "{{{1
