@@ -23,18 +23,22 @@
 
 " Example1:
 
-"" mapping:
+" set %s
 " %s
-"" option:
-" %s
-"" message:
-" %s
+" fu! Func() abort
+"     %s
+"     %s
+"     return ''
+" endfu
 " ---
-" nno <expr> cd        Func()
-" nno        cd  :call Func()<cr>
+" nolz
+" lz
 " ---
-" set lz
-" set nolz
+" nno          cd  :call Func()<cr>
+" nno  <expr>  cd        Func()
+" ---
+"
+" redraw
 " ---
 " echo 'hello'
 " call timer_start(0, {-> execute('echo "hello"', '')})
