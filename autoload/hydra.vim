@@ -27,9 +27,12 @@ fu! s:create_hydra_heads(dir, tmpl, cbns) abort "{{{1
         sil 0put =text
         $d_
         update
+        argadd %
     endfor
-    exe 'Dirvish '.a:dir
-    1
+    first
+    " enable statusline item showing position in the arglist
+    let g:my_stl_list_position = 2
+    let g:motion_to_repeat = ']a'
 endfu
 
 fu! s:empty_dir(dir) abort "{{{1
