@@ -77,17 +77,19 @@ endfu
 fu! s:get_expanded_template(tmpl, cbn) abort "{{{1
     let texts = split(a:tmpl, '%s\zs')
     " Replace  each `%s`  item with  the appropriate  text, escaping  characters
-    " which have a special meaning in  the replacement part of a substitution (\
-    " ~ &).
+    " which have a special meaning in  the replacement part of a substitution:
     "
-    " Why checking that there's a `%s` item? Shouldn't always there be one?{{{
+    "         \ ~ &
+    "
+    " Why checking that there's a `%s` item? Shouldn't there always be one?{{{
     "
     " Not necessarily. Watch:
     "
     "     foo %s bar %s baz
+    "
     "     → foo %s
     "       bar %s
-    "       baz (no `%s` item)
+    "       baz     (no `%s` item)
     "}}}
     call map(texts, {j,v -> v =~# '%s'
     \?                          substitute(v, '%s', escape(a:cbn[j], '\~&'), '')
