@@ -17,11 +17,13 @@ fu! s:all_combinations(sets) abort "{{{1
 endfu
 
 fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
+    let ext = !empty(a:ext) ? '.'.a:ext : ''
+
     for i in range(1,len(a:cbns))
         "                      ┌ padding of `0`, so that the filenames are sorted as expected
         "                      │ when there are more than 10 possible combinations
         "                      │
-        exe 'e '.a:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.'.'.a:ext
+        exe 'e '.a:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.ext
         let cbn = a:cbns[i-1]
         " compute a code standing for the current combination
         " sth like 1010
@@ -35,8 +37,10 @@ fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
         sil $put =expanded_tmpl
         0d_
         update
-        argadd %
     endfor
+
+    " populate arglist with all generated files
+    exe 'args '.join(glob(a:dir.'/head*'.ext, 0, 1))
     first
     " enable statusline item showing position in the arglist
     let g:my_stl_list_position = 2
