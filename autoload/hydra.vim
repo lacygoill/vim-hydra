@@ -173,8 +173,10 @@ fu! hydra#main(line1,line2) abort "{{{1
         endif
 
         tabnew
-        call s:prepare_result(dir)
         call s:create_hydra_heads(dir, template, cbns, sets, ext, cml)
+        call s:prepare_result(dir, sets)
+        " load hydra file, then split window verticall, then load result file
+        e# | vs#
     catch
         return my_lib#catch_error()
     finally
@@ -187,12 +189,24 @@ fu! s:msg(msg) abort "{{{1
     return 'echoerr '.string(a:msg)
 endfu
 
-fu! s:prepare_result(dir) abort "{{{1
+fu! s:prepare_result(dir, sets) abort "{{{1
+    " TODO:
+    " Create documentation file.
+
+    " TODO:
+    " create `:HydraAnalyse` which would regroup all comments in the result file
+    " and associate each of them with all appropriate codes
+
     exe 'e '.a:dir.'/result'
-    let a_list = ['lz    <expr>  redraw  timer  = 1', 'nolz  ∅       ∅       ∅      = 0']
-    sil $put='Code meaning:'
-    sil $put=  [''] + map(a_list, {i,v -> '    '.v}) + ['']
-    sil $put='Conclusion:'
+
+    sil $put=['Code meaning:', '']
+    for a_set in deepcopy(a:sets)
+        call map(a_set, {i,v -> i.'  '.(empty(v) ? '∅' : v)})
+        sil $put =a_set + ['']
+    endfor
+
+    sil $put=['', 'Conclusion:']
+
     0d_
     update
 endfu
