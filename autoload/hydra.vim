@@ -16,6 +16,12 @@ fu! s:all_combinations(sets) abort "{{{1
     return cbns
 endfu
 
+fu! hydra#analyse() abort "{{{1
+    " TODO: finish
+    " should regroup all comments in the result file
+    " and associate each of them with all appropriate codes
+endfu
+
 fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
     let ext = !empty(a:ext) ? '.'.a:ext : ''
 
@@ -193,13 +199,6 @@ fu! s:msg(msg) abort "{{{1
 endfu
 
 fu! s:prepare_result(dir, sets) abort "{{{1
-    " TODO:
-    " Create documentation file.
-
-    " TODO:
-    " create `:HydraAnalyse` which would regroup all comments in the result file
-    " and associate each of them with all appropriate codes
-
     exe 'e '.a:dir.'/result'
 
     sil $put=['Code meaning:', '']

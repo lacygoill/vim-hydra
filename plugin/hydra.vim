@@ -1,3 +1,7 @@
+" TODO:
+" Create documentation file.
+" Move the `Purpose` section there.
+
 " Purpose {{{1
 "
 " This code will  be useful to understand what are  the necessary and sufficient
@@ -59,7 +63,7 @@
 " Note:
 " An empty line means that the option can be absent.
 
-" Command {{{1
+" Commands {{{1
 
-com! -bar -range=% Hydra exe hydra#main(<line1>,<line2>)
-
+com! -bar -range=% Hydra         exe hydra#main(<line1>,<line2>)
+com! -bar -range=% HydraAnalyse  exe hydra#analyse()
