@@ -208,7 +208,7 @@ fu! s:prepare_result(dir, sets) abort "{{{1
         sil $put =a_set + ['']
     endfor
 
-    sil $put=['', 'Conclusion:']
+    sil $put=['', '', 'Observations:', '', '', '', 'Conclusion:']
 
     0d_
     update
