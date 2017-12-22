@@ -1,7 +1,4 @@
 " TODO:
-" assign value to `undo_ftplugin`
-
-" TODO:
 " color invariants with HG `Number`
 
 " TODO:
