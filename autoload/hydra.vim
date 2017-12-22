@@ -67,7 +67,6 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
         "                      │ when there are more than 10 possible combinations
         "                      │
         exe 'e '.s:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.ext
-        setl nowrap
         let cbn = a:cbns[i-1]
         " compute a code standing for the current combination
         " sth like 1010
@@ -240,7 +239,6 @@ endfu
 
 fu! s:prepare_result(sets) abort "{{{1
     exe 'e '.s:dir.'/result'
-    setl nowrap
 
     sil $put=['Code meaning:', '']
     for a_set in deepcopy(a:sets)
