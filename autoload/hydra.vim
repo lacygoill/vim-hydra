@@ -1,7 +1,4 @@
 " TODO:
-" color invariants with HG `Number`
-
-" TODO:
 " Fold observations further.
 
 let s:dir           = $XDG_RUNTIME_DIR.'/hydra'
