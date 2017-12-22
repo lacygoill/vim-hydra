@@ -251,9 +251,14 @@ fu! s:prepare_analysis(sets) abort "{{{1
     exe 'e '.s:analysis_file
 
     sil $put=['Code meaning:', '']
+    let i = 1
+    let ordinals = {'1': '1st', '2': '2nd', '3': '3rd'}
     for a_set in deepcopy(a:sets)
+        let ordinal = i <= 3 ? ordinals[i] : i.'th'
+        $put =[ordinal.' digit', '']
         call map(a_set, {i,v -> i.'  '.(empty(v) ? '∅' : v)})
         sil $put =a_set + ['']
+        let i += 1
     endfor
 
     sil $put=['', '', 'Observations:', '', '', '', 'Conclusion:']
