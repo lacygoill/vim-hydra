@@ -1,5 +1,6 @@
 " TODO:
-" Fold observations further.
+" Fold `Observations` further.
+" Do the same for `Code meaning`.
 
 let s:dir           = $XDG_RUNTIME_DIR.'/hydra'
 let s:analysis_file = s:dir.'/analysis.hydra'
@@ -55,18 +56,9 @@ fu! s:analyse() abort "{{{1
         " ['8','8','8']
         call map(transposed_codes, {i,v -> v == filter(deepcopy(v), {j,w -> w ==# v[0] })})
 
-        " [0, 1, 0, 1]  →  [' ', '^', ' ', '^']
-        call map(transposed_codes, {i,v -> v ? '^' : ' '})
-        " ' ^ ^'
-        sil put =matchstr(join(transposed_codes), '\v.*\s@<!')
-        "        │
-        "        └ trim ending whitespace if any
-        norm! {
-        " ' ^ ^'  →  ' v v'
-        sil put =matchstr(join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '})), '\v.*\s@<!')
-        norm! }k
-        "      ^ important to get back exactly on the line where we wrote
-        "        ' ^ ^'
+        " [0, 1, 0, 1]  →  [0, 1, 0, 3]
+        call map(transposed_codes, {i,v -> v ? i : 0})
+        call s:create_match_invariants(codes, transposed_codes)
     endfor
     update
     setl foldenable
@@ -105,6 +97,39 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     " enable statusline item showing position in the arglist
     let g:my_stl_list_position = 2
     let g:motion_to_repeat = ']a'
+endfu
+
+fu! s:create_match_invariants(codes, transposed_codes) abort "{{{1
+    let lline = line('.')
+    let fline = lline - len(a:codes) + 1
+    for vcol in a:transposed_codes
+        if vcol == 0
+            continue
+        endif
+        let pat = map(range(fline, lline), {i,v -> '\%'.(2*vcol+1).'v\%'.v.'l.\|'})
+        let pat = substitute(join(pat, ''), '\\|$', '', '')
+        call matchadd('DiffAdd', pat, 0, -1)
+    endfor
+    " Alternative:{{{
+    " Instead of creating a match, you can also add a marker.
+    "
+    " " [0, 1, 0, 1]  →  [' ', '^', ' ', '^']
+    " call map(a:transposed_codes, {i,v -> v ? '^' : ' '})
+    " " ' ^ ^'
+    "
+    " sil put =matchstr(join(a:transposed_codes), '\v.*\s@<!')
+    " "        │
+    " "        └ trim ending whitespace if any
+    "
+    " norm! {
+    " " ' ^ ^'  →  ' v v'
+    "
+    " sil put =matchstr(join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '})), '\v.*\s@<!')
+    "
+    " norm! }k
+    " "      ^ important to get back exactly on the line where we wrote
+    " "        ' ^ ^'
+    "}}}
 endfu
 
 fu! s:empty_dir() abort "{{{1
@@ -265,7 +290,8 @@ fu! s:prepare_analysis(sets) abort "{{{1
         let i += 1
     endfor
 
-    sil $put=['# Observations', '', '# Conclusion']
+    sil $put=['# Observations', '', '# Conclusion', '',
+    \         'Describe the heads according to their invariants:', '']
 
     0d_
     update
