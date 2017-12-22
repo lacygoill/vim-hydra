@@ -1,3 +1,6 @@
+let s:dir         = $XDG_RUNTIME_DIR.'/hydra'
+let s:result_file = s:dir.'/result'
+
 fu! s:all_combinations(sets) abort "{{{1
     let cbns = []
     if len(a:sets) == 2
@@ -17,20 +20,54 @@ fu! s:all_combinations(sets) abort "{{{1
 endfu
 
 fu! hydra#analyse() abort "{{{1
-    " TODO: finish
-    " should regroup all comments in the result file
-    " and associate each of them with all appropriate codes
+    let obs2codes = {}
+    let heads = glob(s:dir.'/head*.*', 0, 1)
+    for head in heads
+        let lines = readfile(head)
+        let code = matchstr(lines[0], '\d\+')
+        let i = match(lines, 'Write your observation')
+        let j = match(lines, 'ENDOBS$')
+        let an_obs = join(lines[i+1:j-1], "\n")
+        let obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
+    endfor
+
+    exe 'e '.s:result_file
+    call search('^Observations:', 'c')
+    for [obs, codes] in items(obs2codes)
+        sil put =[''] + codes
+
+        " ['1','2','3']     ['1','4','7']
+        " ['4','5','6']  →  ['2','5','8']
+        " ['7','8','9']     ['3','6','9']
+        let transposed_codes = call('my_lib#matrix_transposition', map(codes, {i,v -> split(v, '\zs')}))
+
+        " ['1','2','3']
+        " ['4','4','4']  →  [0, 1, 0, 1]
+        " ['5','6','7']
+        " ['8','8','8']
+        call map(transposed_codes, {i,v -> v == filter(deepcopy(v), {j,w -> w ==# v[0] })})
+
+        " [0, 1, 0, 1]  →  ' ^ ^'
+        call map(transposed_codes, {i,v -> v ? '^' : ' '})
+        put =join(transposed_codes, '')
+        norm! {
+        " ' ^ ^'  →  ' v v'
+        put =join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '}), '')
+        norm! }
+    endfor
+    update
     return ''
 endfu
 
-fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
+fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     let ext = !empty(a:ext) ? '.'.a:ext : ''
 
     for i in range(1,len(a:cbns))
         "                      ┌ padding of `0`, so that the filenames are sorted as expected
         "                      │ when there are more than 10 possible combinations
         "                      │
-        exe 'e '.a:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.ext
+        exe 'e '.s:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.ext
+        setl nowrap
         let cbn = a:cbns[i-1]
         " compute a code standing for the current combination
         " sth like 1010
@@ -41,8 +78,8 @@ fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
 
         sil $put =code
         sil $put =['',
-        \          a:cml.' Write your observation below (stop before END):',
-        \          a:cml.' END',
+        \          a:cml.' Write your observation below (stop before ENDOBS):',
+        \          a:cml.' ENDOBS',
         \          '']
         sil $put =expanded_tmpl
         0d_
@@ -50,15 +87,15 @@ fu! s:create_hydra_heads(dir, tmpl, cbns, sets, ext, cml) abort "{{{1
     endfor
 
     " populate arglist with all generated files
-    exe 'args '.join(glob(a:dir.'/head*'.ext, 0, 1))
+    exe 'args '.join(glob(s:dir.'/head*'.ext, 0, 1))
     first
     " enable statusline item showing position in the arglist
     let g:my_stl_list_position = 2
     let g:motion_to_repeat = ']a'
 endfu
 
-fu! s:empty_dir(dir) abort "{{{1
-    call map(glob(a:dir.'/*', 0, 1),
+fu! s:empty_dir() abort "{{{1
+    call map(glob(s:dir.'/*', 0, 1),
     \        {i,v -> (bufexists(v) && execute('bwipe! '.v)) + delete(v)})
     " Why do we need to delete a possible buffer?{{{
     "
@@ -175,16 +212,15 @@ fu! hydra#main(line1,line2) abort "{{{1
         endif
 
         let cbns = s:all_combinations(sets)
-        let dir  = $XDG_RUNTIME_DIR.'/hydra'
-        if !isdirectory(dir)
-            call mkdir(dir, 'p')
+        if !isdirectory(s:dir)
+            call mkdir(s:dir, 'p')
         else
-            call s:empty_dir(dir)
+            call s:empty_dir()
         endif
 
         tabnew
-        call s:create_hydra_heads(dir, template, cbns, sets, ext, cml)
-        call s:prepare_result(dir, sets)
+        call s:create_hydra_heads(template, cbns, sets, ext, cml)
+        call s:prepare_result(sets)
         "┌ load head file
         "│    ┌ split window vertically, and load result file
         "│    │     ┌ get back to head file
@@ -202,8 +238,9 @@ fu! s:msg(msg) abort "{{{1
     return 'echoerr '.string(a:msg)
 endfu
 
-fu! s:prepare_result(dir, sets) abort "{{{1
-    exe 'e '.a:dir.'/result'
+fu! s:prepare_result(sets) abort "{{{1
+    exe 'e '.s:dir.'/result'
+    setl nowrap
 
     sil $put=['Code meaning:', '']
     for a_set in deepcopy(a:sets)
