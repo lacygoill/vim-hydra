@@ -244,7 +244,7 @@ endfu
 
 fu! s:prepare_analysis(sets) abort "{{{1
     " TODO:
-    " add syntax highlighting, and ft detection
+    " add syntax highlighting
 
     exe 'e '.s:analysis_file
 
