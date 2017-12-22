@@ -1,3 +1,12 @@
+" TODO:
+" assign value to `undo_ftplugin`
+
+" TODO:
+" color invariants with HG `Number`
+
+" TODO:
+" Fold observations further.
+
 let s:dir           = $XDG_RUNTIME_DIR.'/hydra'
 let s:analysis_file = s:dir.'/analysis.hydra'
 
@@ -32,13 +41,12 @@ fu! s:analyse() abort "{{{1
     endfor
 
     exe 'e '.s:analysis_file
-    setl nofoldenable
+    setl nofoldenable nowrap
     call search('^# Observations', 'c')
-    put =''
     " write markers above/below each column of identical digits
     " those are interesting invariants
     for [obs, codes] in items(obs2codes)
-        put =[obs] + ['']
+        sil put =[''] + [obs] + ['']
         call map(codes, {i,v -> split(v, '\zs')})
         sil put =map(deepcopy(codes), {i,v -> join(v)})
 
@@ -56,14 +64,15 @@ fu! s:analyse() abort "{{{1
         " [0, 1, 0, 1]  →  [' ', '^', ' ', '^']
         call map(transposed_codes, {i,v -> v ? '^' : ' '})
         " ' ^ ^'
-        put =matchstr(join(transposed_codes), '\v.*\s@<!')
-        "    │
-        "    └ trim ending whitespace if any
+        sil put =matchstr(join(transposed_codes), '\v.*\s@<!')
+        "        │
+        "        └ trim ending whitespace if any
         norm! {
         " ' ^ ^'  →  ' v v'
-        put =matchstr(join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '})), '\v.*\s@<!')
-        norm! }
-        put =''
+        sil put =matchstr(join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '})), '\v.*\s@<!')
+        norm! }k
+        "      ^ important to get back exactly on the line where we wrote
+        "        ' ^ ^'
     endfor
     update
     setl foldenable
@@ -262,7 +271,7 @@ fu! s:prepare_analysis(sets) abort "{{{1
         let i += 1
     endfor
 
-    sil $put=['', '# Observations', '', '', '', '# Conclusion']
+    sil $put=['# Observations', '', '# Conclusion']
 
     0d_
     update
