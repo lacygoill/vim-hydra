@@ -1,7 +1,3 @@
-" TODO:
-" Fold `Observations` further.
-" Do the same for `Code meaning`.
-
 let s:dir           = $XDG_RUNTIME_DIR.'/hydra'
 let s:analysis_file = s:dir.'/analysis.hydra'
 
@@ -41,7 +37,7 @@ fu! s:analyse() abort "{{{1
     " write markers above/below each column of identical digits
     " those are interesting invariants
     for [obs, codes] in items(obs2codes)
-        sil put =[''] + [obs] + ['']
+        sil put =[''] + ['## '.obs] + ['']
         call map(codes, {i,v -> split(v, '\zs')})
         sil put =map(deepcopy(codes), {i,v -> join(v)})
 
@@ -279,12 +275,12 @@ endfu
 fu! s:prepare_analysis(sets) abort "{{{1
     exe 'e '.s:analysis_file
 
-    sil $put=['# Code meaning', '']
+    sil $put=['# Code meaning']
     let i = 1
     let ordinals = {'1': '1st', '2': '2nd', '3': '3rd'}
     for a_set in deepcopy(a:sets)
         let ordinal = i <= 3 ? ordinals[i] : i.'th'
-        $put =[ordinal.' digit', '']
+        $put =['## '.ordinal.' digit', '']
         call map(a_set, {i,v -> i.'  '.(empty(v) ? '∅' : v)})
         sil $put =a_set + ['']
         let i += 1
