@@ -1,5 +1,5 @@
-let s:dir         = $XDG_RUNTIME_DIR.'/hydra'
-let s:result_file = s:dir.'/result'
+let s:dir           = $XDG_RUNTIME_DIR.'/hydra'
+let s:analysis_file = s:dir.'/analysis.hydra'
 
 fu! s:all_combinations(sets) abort "{{{1
     let cbns = []
@@ -31,7 +31,7 @@ fu! s:analyse() abort "{{{1
         let obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
     endfor
 
-    exe 'e '.s:result_file
+    exe 'e '.s:analysis_file
     call search('^Observations:', 'c')
     put =''
     for [obs, codes] in items(obs2codes)
@@ -224,9 +224,9 @@ fu! hydra#main(line1,line2) abort "{{{1
 
         tabnew
         call s:create_hydra_heads(template, cbns, sets, ext, cml)
-        call s:prepare_result(sets)
+        call s:prepare_analysis(sets)
         "┌ load head file
-        "│    ┌ split window vertically, and load result file
+        "│    ┌ split window vertically, and load analysis file
         "│    │     ┌ get back to head file
         "│    │     │
         e# | vs# | wincmd p
@@ -242,11 +242,11 @@ fu! s:msg(msg) abort "{{{1
     return 'echoerr '.string(a:msg)
 endfu
 
-fu! s:prepare_result(sets) abort "{{{1
+fu! s:prepare_analysis(sets) abort "{{{1
     " TODO:
     " add syntax highlighting, and ft detection
 
-    exe 'e '.s:dir.'/result'
+    exe 'e '.s:analysis_file
 
     sil $put=['Code meaning:', '']
     for a_set in deepcopy(a:sets)
