@@ -32,7 +32,8 @@ fu! s:analyse() abort "{{{1
     endfor
 
     exe 'e '.s:analysis_file
-    call search('^Observations:', 'c')
+    setl nofoldenable
+    call search('^# Observations', 'c')
     put =''
     " write markers above/below each column of identical digits
     " those are interesting invariants
@@ -64,8 +65,8 @@ fu! s:analyse() abort "{{{1
         norm! }
         put =''
     endfor
-    put =''
     update
+    setl foldenable
     return ''
 endfu
 
@@ -250,7 +251,7 @@ endfu
 fu! s:prepare_analysis(sets) abort "{{{1
     exe 'e '.s:analysis_file
 
-    sil $put=['Code meaning:', '']
+    sil $put=['# Code meaning', '']
     let i = 1
     let ordinals = {'1': '1st', '2': '2nd', '3': '3rd'}
     for a_set in deepcopy(a:sets)
@@ -261,7 +262,7 @@ fu! s:prepare_analysis(sets) abort "{{{1
         let i += 1
     endfor
 
-    sil $put=['', '', 'Observations:', '', '', '', 'Conclusion:']
+    sil $put=['', '# Observations', '', '', '', '# Conclusion']
 
     0d_
     update
