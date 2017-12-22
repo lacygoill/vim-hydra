@@ -34,6 +34,8 @@ fu! s:analyse() abort "{{{1
     exe 'e '.s:analysis_file
     call search('^Observations:', 'c')
     put =''
+    " write markers above/below each column of identical digits
+    " those are interesting invariants
     for [obs, codes] in items(obs2codes)
         call map(codes, {i,v -> split(v, '\zs')})
         sil put =map(deepcopy(codes), {i,v -> join(v)})
@@ -53,6 +55,8 @@ fu! s:analyse() abort "{{{1
         call map(transposed_codes, {i,v -> v ? '^' : ' '})
         " ' ^ ^'
         put =matchstr(join(transposed_codes), '\v.*\s@<!')
+        "    │
+        "    └ trim ending whitespace if any
         norm! {
         " ' ^ ^'  →  ' v v'
         put =matchstr(join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '})), '\v.*\s@<!')
@@ -225,11 +229,11 @@ fu! hydra#main(line1,line2) abort "{{{1
         tabnew
         call s:create_hydra_heads(template, cbns, sets, ext, cml)
         call s:prepare_analysis(sets)
-        "┌ load head file
-        "│    ┌ split window vertically, and load analysis file
-        "│    │     ┌ get back to head file
-        "│    │     │
         e# | vs# | wincmd p
+        "│     │   │
+        "│     │   └ get back to head file
+        "│     └ split window vertically, and load analysis file
+        "└ load head file
     catch
         return my_lib#catch_error()
     finally
