@@ -243,9 +243,6 @@ fu! s:msg(msg) abort "{{{1
 endfu
 
 fu! s:prepare_analysis(sets) abort "{{{1
-    " TODO:
-    " add syntax highlighting
-
     exe 'e '.s:analysis_file
 
     sil $put=['Code meaning:', '']
