@@ -37,6 +37,7 @@ fu! s:analyse() abort "{{{1
     " write markers above/below each column of identical digits
     " those are interesting invariants
     for [obs, codes] in items(obs2codes)
+        put =[obs] + ['']
         call map(codes, {i,v -> split(v, '\zs')})
         sil put =map(deepcopy(codes), {i,v -> join(v)})
 
