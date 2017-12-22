@@ -19,7 +19,7 @@ fu! s:all_combinations(sets) abort "{{{1
     return cbns
 endfu
 
-fu! hydra#analyse() abort "{{{1
+fu! s:analyse() abort "{{{1
     let obs2codes = {}
     let heads = glob(s:dir.'/head*.*', 0, 1)
     for head in heads
@@ -250,6 +250,8 @@ fu! s:prepare_result(sets) abort "{{{1
 
     0d_
     update
+
+    com! -bar -buffer -range=% HydraAnalyse  exe s:analyse()
 endfu
 
 fu! s:winrestview(view, orig_id) abort "{{{1
