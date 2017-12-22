@@ -33,13 +33,15 @@ fu! s:analyse() abort "{{{1
 
     exe 'e '.s:result_file
     call search('^Observations:', 'c')
+    put =''
     for [obs, codes] in items(obs2codes)
-        sil put =[''] + codes
+        call map(codes, {i,v -> split(v, '\zs')})
+        sil put =map(deepcopy(codes), {i,v -> join(v)})
 
         " ['1','2','3']     ['1','4','7']
         " ['4','5','6']  →  ['2','5','8']
         " ['7','8','9']     ['3','6','9']
-        let transposed_codes = call('my_lib#matrix_transposition', map(codes, {i,v -> split(v, '\zs')}))
+        let transposed_codes = call('my_lib#matrix_transposition', codes)
 
         " ['1','2','3']
         " ['4','4','4']  →  [0, 1, 0, 1]
@@ -47,14 +49,17 @@ fu! s:analyse() abort "{{{1
         " ['8','8','8']
         call map(transposed_codes, {i,v -> v == filter(deepcopy(v), {j,w -> w ==# v[0] })})
 
-        " [0, 1, 0, 1]  →  ' ^ ^'
+        " [0, 1, 0, 1]  →  [' ', '^', ' ', '^']
         call map(transposed_codes, {i,v -> v ? '^' : ' '})
-        put =join(transposed_codes, '')
+        " ' ^ ^'
+        put =join(transposed_codes)
         norm! {
         " ' ^ ^'  →  ' v v'
-        put =join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '}), '')
+        put =join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '}))
         norm! }
+        put =''
     endfor
+    put =''
     update
     return ''
 endfu
@@ -238,6 +243,9 @@ fu! s:msg(msg) abort "{{{1
 endfu
 
 fu! s:prepare_result(sets) abort "{{{1
+    " TODO:
+    " add syntax highlighting, and ft detection
+
     exe 'e '.s:dir.'/result'
 
     sil $put=['Code meaning:', '']
