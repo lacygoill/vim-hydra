@@ -52,10 +52,10 @@ fu! s:analyse() abort "{{{1
         " [0, 1, 0, 1]  →  [' ', '^', ' ', '^']
         call map(transposed_codes, {i,v -> v ? '^' : ' '})
         " ' ^ ^'
-        put =join(transposed_codes)
+        put =matchstr(join(transposed_codes), '\v.*\s@<!')
         norm! {
         " ' ^ ^'  →  ' v v'
-        put =join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '}))
+        put =matchstr(join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '})), '\v.*\s@<!')
         norm! }
         put =''
     endfor
