@@ -1,7 +1,4 @@
 " TODO:
-" Remove cml in observations.
-
-" TODO:
 " Allow the user to write `headXX` as an observation, and make the plugin expand
 " it into the corresponding observation (looking in the eponym file).
 
@@ -47,7 +44,12 @@ fu! s:analyse() abort "{{{1
     call search('^# Observations', 'c')
     let c = 0
     for [obs, codes] in items(obs2codes)
-        " write each observation noted in the heads files
+        " Write each observation noted in the heads files.
+
+        " the observation is probably commented; try to guess what it is
+        let cml = matchstr(obs, '\S\{1,2}\s')
+        " remove it
+        let obs = substitute(obs, '\%(^\|\n\)\zs'.cml, '', 'g')
         sil put =(c ? [''] : []) + ['## '.obs] + ['']
         " write the list of codes below;
         " we split then join back to add a space between 2 consecutive digits
