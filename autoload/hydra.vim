@@ -22,7 +22,9 @@ fu! s:all_combinations(sets) abort "{{{1
 endfu
 
 fu! s:analyse() abort "{{{1
+    " dictionary binding a list of codes to each observation
     let obs2codes = {}
+    " iterate over the files such as `/run/user/1000/hydra/head01.ext`
     let heads = glob(s:dir.'/head*.*', 0, 1)
     for head in heads
         let lines = readfile(head)
@@ -39,24 +41,27 @@ fu! s:analyse() abort "{{{1
     " write markers above/below each column of identical digits
     " those are interesting invariants
     for [obs, codes] in items(obs2codes)
+        " write each observation noted in the heads files
         sil put =[''] + ['## '.obs] + ['']
+        " write the list of codes below;
+        " we split then join back to add a space between 2 consecutive digits
         call map(codes, {i,v -> split(v, '\zs')})
         sil put =map(deepcopy(codes), {i,v -> join(v)})
 
-        " ['1','2','3']     ['1','4','7']
-        " ['4','5','6']  →  ['2','5','8']
-        " ['7','8','9']     ['3','6','9']
+        " ['1','2']     ['1','3','5']
+        " ['3','4']  →  ['2','4','6']
+        " ['5','6']
         let transposed_codes = call('my_lib#matrix_transposition', codes)
 
         " ['1','2','3']
         " ['4','4','4']  →  [0, 1, 0, 1]
         " ['5','6','7']
         " ['8','8','8']
-        call map(transposed_codes, {i,v -> v == filter(deepcopy(v), {j,w -> w ==# v[0] })})
-
+        let invariants = map(transposed_codes, {i,v -> v == filter(deepcopy(v), {j,w -> w ==# v[0] })})
         " [0, 1, 0, 1]  →  [0, 1, 0, 3]
-        call map(transposed_codes, {i,v -> v ? i : 0})
-        call s:create_match_invariants(codes, transposed_codes)
+        let invariants = map(invariants, {i,v -> v ? i : 0})
+
+        call s:create_match_invariants(codes, invariants)
     endfor
     update
     setl foldenable
@@ -97,10 +102,12 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     let g:motion_to_repeat = ']a'
 endfu
 
-fu! s:create_match_invariants(codes, transposed_codes) abort "{{{1
+fu! s:create_match_invariants(codes, invariants) abort "{{{1
     let lline = line('.')
     let fline = lline - len(a:codes) + 1
-    for vcol in a:transposed_codes
+    for vcol in a:invariants
+        " We could filter `a:invariants`, but I prefer not to,
+        " because it would break the alternative method (addind markers `v ^`).
         if vcol == 0
             continue
         endif
@@ -112,17 +119,17 @@ fu! s:create_match_invariants(codes, transposed_codes) abort "{{{1
     " Instead of creating a match, you can also add a marker.
     "
     " " [0, 1, 0, 1]  →  [' ', '^', ' ', '^']
-    " call map(a:transposed_codes, {i,v -> v ? '^' : ' '})
+    " call map(a:invariants, {i,v -> v ? '^' : ' '})
     " " ' ^ ^'
     "
-    " sil put =matchstr(join(a:transposed_codes), '\v.*\s@<!')
+    " sil put =matchstr(join(a:invariants), '\v.*\s@<!')
     " "        │
     " "        └ trim ending whitespace if any
     "
     " norm! {
     " " ' ^ ^'  →  ' v v'
     "
-    " sil put =matchstr(join(map(transposed_codes, {i,v -> v ==# '^' ? 'v' : ' '})), '\v.*\s@<!')
+    " sil put =matchstr(join(map(invariants, {i,v -> v ==# '^' ? 'v' : ' '})), '\v.*\s@<!')
     "
     " norm! }k
     " "      ^ important to get back exactly on the line where we wrote
