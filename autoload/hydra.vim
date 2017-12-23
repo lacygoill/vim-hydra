@@ -105,6 +105,10 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
 endfu
 
 fu! s:create_match_invariants(codes, invariants) abort "{{{1
+    " TODO:
+    " Instead of creating a match, we should add a character after the invariant
+    " digits (ex: `1` → `1~`), then in  the syntax file we would highlight the
+    " digit and conceal the added character.
     let lline = line('.')
     let fline = lline - len(a:codes) + 1
     for vcol in a:invariants
