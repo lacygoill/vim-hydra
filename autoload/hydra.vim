@@ -1,7 +1,3 @@
-" TODO:
-" Allow the user to write `headXX` as an observation, and make the plugin expand
-" it into the corresponding observation (looking in the eponym file).
-
 let s:dir           = $XDG_RUNTIME_DIR.'/hydra'
 let s:analysis_file = s:dir.'/analysis.hydra'
 
@@ -31,11 +27,7 @@ fu! s:analyse() abort "{{{1
     " iterate over the files such as `/run/user/1000/hydra/head01.ext`
     let heads = glob(s:dir.'/head*.*', 0, 1)
     for head in heads
-        let lines = readfile(head)
-        let code = matchstr(lines[0], '\d\+')
-        let i = match(lines, 'Write your observation')
-        let j = match(lines, 'ENDOBS$')
-        let an_obs = join(lines[i+1:j-1], "\n")
+        let [an_obs, code] = s:get_observation_and_code(head)
         let obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
     endfor
 
@@ -57,6 +49,12 @@ fu! s:analyse() abort "{{{1
         " we split then join back to add a space between 2 consecutive digits
         call map(codes, {i,v -> split(v, '\zs')})
         sil put =map(deepcopy(codes), {i,v -> join(v)})
+
+        " if we have only  1 code, there can't be any  invariant, and there's no
+        " nothing to syntax highlight
+        if len(codes) == 1
+            break
+        endif
 
         " ['1','2']     ['1','3','5']
         " ['3','4']  →  ['2','4','6']
@@ -231,6 +229,28 @@ fu! s:get_expanded_template(tmpl, cbn) abort "{{{1
     return substitute(join(texts, ''), '\v\zs\s*\ze%($|\n)', '', 'g')
 endfu
 
+fu! s:get_observation_and_code(head) abort "{{{1
+    let lines = readfile(a:head)
+    let code = matchstr(lines[0], '\d\+')
+    let i = match(lines, 'Write your observation')
+    let j = match(lines, 'ENDOBS$')
+    let an_obs = join(lines[i+1:j-1], "\n")
+
+    " If the  user wrote `obs123`  as an observation,  expand it into  the 123th
+    " observation.
+    "                                         ┌ possible comment leader
+    "                               ┌─────────┤
+    let old_obs = matchstr(an_obs, '^.\{1,2}\s*obs\zs\d\+\ze\s*$')
+    "                     ┌ make sure `s:new_obs[old_obs-1]` exists
+    "                     │
+    if !empty(old_obs) && get(get(s:, 'new_obs', []), old_obs - 1, '') != ''
+        let an_obs = s:new_obs[old_obs-1]
+    elseif empty(old_obs)
+        let s:new_obs = get(s:, 'new_obs', []) + [an_obs]
+    endif
+    return [an_obs, code]
+endfu
+
 fu! s:get_sets(dlm_addr) abort "{{{1
     let sets = []
     for i in range(1, len(a:dlm_addr)-1)
@@ -311,6 +331,7 @@ fu! hydra#main(line1,line2) abort "{{{1
         return my_lib#catch_error()
     finally
         call s:winrestview(view, orig_id)
+        unlet! s:new_obs
     endtry
     return ''
 endfu
