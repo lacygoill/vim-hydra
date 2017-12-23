@@ -304,7 +304,7 @@ fu! s:prepare_analysis(sets) abort "{{{1
     for a_set in deepcopy(a:sets)
         let ordinal = i <= 3 ? ordinals[i] : i.'th'
         $put =['## '.ordinal.' digit', '']
-        call map(a_set, {i,v -> i.'~  '.(empty(v) ? '∅' : v)})
+        call map(a_set, {i,v -> i.'  '.(empty(v) ? '∅' : v)})
         sil $put =a_set + ['']
         let i += 1
     endfor
