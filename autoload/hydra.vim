@@ -40,9 +40,10 @@ fu! s:analyse() abort "{{{1
     call search('^# Observations', 'c')
     " write markers above/below each column of identical digits
     " those are interesting invariants
+    let c = 0
     for [obs, codes] in items(obs2codes)
         " write each observation noted in the heads files
-        sil put =[''] + ['## '.obs] + ['']
+        sil put =(c ? [''] : []) + ['## '.obs] + ['']
         " write the list of codes below;
         " we split then join back to add a space between 2 consecutive digits
         call map(codes, {i,v -> split(v, '\zs')})
@@ -62,6 +63,7 @@ fu! s:analyse() abort "{{{1
         let invariants = map(invariants, {i,v -> v ? i : 0})
 
         call s:create_match_invariants(codes, invariants)
+        let c += 1
     endfor
     update
     setl foldenable
