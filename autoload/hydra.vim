@@ -43,13 +43,15 @@ fu! s:analyse() abort "{{{1
     setl nofoldenable nowrap
     call search('^# Observations', 'c')
     let c = 0
+    " Write each observation noted in the heads files, as well as the associated
+    " (syntax highlighted) codes.
     for [obs, codes] in items(obs2codes)
-        " Write each observation noted in the heads files.
-
         " the observation is probably commented; try to guess what it is
         let cml = matchstr(obs, '\S\{1,2}\s')
         " remove it
         let obs = substitute(obs, '\%(^\|\n\)\zs'.cml, '', 'g')
+
+        " write the observation (and make it a title)
         sil put =(c ? [''] : []) + ['## '.obs] + ['']
         " write the list of codes below;
         " we split then join back to add a space between 2 consecutive digits
