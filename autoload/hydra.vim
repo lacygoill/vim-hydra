@@ -45,8 +45,6 @@ fu! s:analyse() abort "{{{1
     exe 'e '.s:analysis_file
     setl nofoldenable nowrap
     call search('^# Observations', 'c')
-    " write markers above/below each column of identical digits
-    " those are interesting invariants
     let c = 0
     for [obs, codes] in items(obs2codes)
         " write each observation noted in the heads files
@@ -69,6 +67,8 @@ fu! s:analyse() abort "{{{1
         " [0, 1, 0, 1]  →  [0, 1, 0, 3]
         let invariants = map(invariants, {i,v -> v ? i : 0})
 
+        " add syntax highlighting for each column of identical digits
+        " those are interesting invariants
         call s:create_match_invariants(codes, invariants)
         let c += 1
     endfor
