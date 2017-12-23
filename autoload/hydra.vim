@@ -112,25 +112,25 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
 endfu
 
 fu! s:create_match_invariants(codes, invariants) abort "{{{1
-    " TODO:
-    " Instead of creating a match, we should add a character after the invariant
-    " digits (ex: `1` → `1~`), then in  the syntax file we would highlight the
-    " digit and conceal the added character.
-    "
-    " Benefit:
-    " The highlighting would remain relevant even when we change the text in the
-    " file and the position of the invariant digits change.
     let lline = line('.')
     let fline = lline - len(a:codes) + 1
-    for vcol in a:invariants
+    " Why `reverse()`?{{{
+    "
+    " Whenever we add  an `~` character, for syntax highlighting,  we change the
+    " column position of the next digit to highlight.
+    " We don't  want to re-compute  this position,  so we process  the invariant
+    " digits in reverse order.
+    "}}}
+    for vcol in reverse(a:invariants)
         " We could filter `a:invariants`, but I prefer not to,
         " because it would break the alternative method (addind markers `v ^`).
         if vcol == 0
             continue
         endif
-        let pat = map(range(fline, lline), {i,v -> '\%'.(2*vcol+1).'v\%'.v.'l.\|'})
-        let pat = substitute(join(pat, ''), '\\|$', '', '')
-        call matchadd('DiffAdd', pat, 0, -1)
+        let coords = map(range(fline, lline), {i,v -> [v, 2*vcol+1]})
+        for coord in coords
+            exe 'sil keepj keepp %s/\%'.coord[0].'l\%'.coord[1].'v./\~&\~/e'
+        endfor
     endfor
     " Alternative:{{{
     " Instead of creating a match, you can also add a marker.
