@@ -1,3 +1,10 @@
+" TODO:
+" Remove cml in observations.
+
+" TODO:
+" Allow the user to write `headXX` as an observation, and make the plugin expand
+" it into the corresponding observation (looking in the eponym file).
+
 let s:dir           = $XDG_RUNTIME_DIR.'/hydra'
 let s:analysis_file = s:dir.'/analysis.hydra'
 
@@ -314,7 +321,7 @@ fu! s:prepare_analysis(sets) abort "{{{1
     for a_set in deepcopy(a:sets)
         let ordinal = i <= 3 ? ordinals[i] : i.'th'
         $put =['## '.ordinal.' digit', '']
-        call map(a_set, {i,v -> i.'  '.(empty(v) ? '∅' : v)})
+        call map(a_set, {i,v -> '~'.i.'~  '.(empty(v) ? '∅' : v)})
         sil $put =a_set + ['']
         let i += 1
     endfor
