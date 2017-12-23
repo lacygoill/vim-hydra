@@ -112,6 +112,9 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
 endfu
 
 fu! s:create_match_invariants(codes, invariants) abort "{{{1
+    " Add `~` characters around invariant digits, so that they are
+    " syntax highlighted.
+
     let lline = line('.')
     let fline = lline - len(a:codes) + 1
     " Why `reverse()`?{{{
