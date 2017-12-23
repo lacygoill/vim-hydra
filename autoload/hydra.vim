@@ -7,12 +7,14 @@ fu! s:all_combinations(sets) abort "{{{1
         for i in a:sets[0]
             for j in a:sets[1]
                 let cbns += [[i , j]]
+                "             ^ string
             endfor
         endfor
     else
         for i in a:sets[0]
             for j in s:all_combinations(a:sets[1:])
                 let cbns += [[i] + j]
+                "            ^^^ list containing a string
             endfor
         endfor
     endif
@@ -208,6 +210,9 @@ fu! s:get_sets(dlm_addr) abort "{{{1
 endfu
 
 fu! s:get_template(line1) abort "{{{1
+    " return all the lines between the first in the range,
+    " and the next `---` line
+
     call cursor(a:line1, 1)
     " if the first line of the range is `---`, don't include
     " it in the template
@@ -230,22 +235,33 @@ fu! hydra#main(line1,line2) abort "{{{1
             return s:msg('Provide a template')
         endif
 
+        " get the addresses of all the lines which consider as “delimiters”;
+        " that is `---` lines + last line in the range
         let dlm_addr = s:get_dlm_addr(a:line1,a:line2)
 
+        " check the range of lines looks valid;
+        " i.e. has at least 2 `---` lines
         if len(dlm_addr) == 1
             return s:msg('No delimiter (---) line')
         elseif len(dlm_addr) == 2
             return s:msg('Not enough delimiter (---) lines')
         endif
 
+        " the lines between 2 consecutive `---` lines compose a set;
+        " get all of them
         let sets = s:get_sets(dlm_addr)
+        " check the range of lines looks valid;
+        " i.e. has as many sets as there are `%s` items in the template
         if len(sets) < count(template, '%s')
             return s:msg('Too many %s items')
         elseif len(sets) > count(template, '%s')
             return s:msg('Too few %s items')
         endif
 
+        " we can create a  new set of lines, each of which come  from one of the
+        " previous sets; get all of those new sets
         let cbns = s:all_combinations(sets)
+        "   ^ combinations
         if !isdirectory(s:dir)
             call mkdir(s:dir, 'p')
         else
@@ -286,7 +302,8 @@ fu! s:prepare_analysis(sets) abort "{{{1
         let i += 1
     endfor
 
-    sil $put=['# Observations', '', '# Conclusion', '',
+    sil $put=['# Observations', '',
+    \         '# Conclusion', '',
     \         'Describe the heads according to their invariants:', '']
 
     0d_
