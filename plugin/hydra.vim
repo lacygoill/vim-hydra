@@ -41,8 +41,9 @@
 " nno          cd  :call Func()<cr>
 " nno  <expr>  cd        Func()
 " ---
-"
+
 " redraw
+" call timer_start(5, {-> execute('redraw', '')})
 " ---
 " echo 'hello'
 " call timer_start(0, {-> execute('echo "hello"', '')})

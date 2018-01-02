@@ -59,7 +59,7 @@ fu! s:analyse() abort "{{{1
         " ['1','2']     ['1','3','5']
         " ['3','4']  →  ['2','4','6']
         " ['5','6']
-        let transposed_codes = call('my_lib#matrix_transposition', codes)
+        let transposed_codes = call('lg#matrix_transposition', codes)
 
         " ['1','2','3']
         " ['4','4','4']  →  [0, 1, 0, 1]
@@ -328,7 +328,7 @@ fu! hydra#main(line1,line2) abort "{{{1
         "│     └ split window vertically, and load analysis file
         "└ load head file
     catch
-        return my_lib#catch_error()
+        return lg#catch_error()
     finally
         call s:winrestview(view, orig_id)
         unlet! s:new_obs

@@ -1,1 +1,1 @@
-au BufRead,BufNewFile analysis.hydra set filetype=hydra
+au BufRead,BufNewFile *.hydra set filetype=hydra
