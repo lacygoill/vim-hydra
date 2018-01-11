@@ -1,3 +1,8 @@
+if exists('g:autoloaded_hydra')
+    finish
+endif
+let g:autoloaded_hydra = 1
+
 let s:dir           = $XDG_RUNTIME_DIR.'/hydra'
 let s:analysis_file = s:dir.'/analysis.hydra'
 
