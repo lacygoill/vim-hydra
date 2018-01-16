@@ -115,7 +115,7 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     first
     " enable statusline item showing position in the arglist
     let g:my_stl_list_position = 2
-    let g:motion_to_repeat = ']a'
+    sil! call lg#motion#repeatable#main#set_last_used(']a', 1)
 endfu
 
 fu! s:create_match_invariants(codes, invariants) abort "{{{1
