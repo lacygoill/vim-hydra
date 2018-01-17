@@ -219,7 +219,7 @@ fu! s:get_expanded_template(tmpl, cbn) abort "{{{1
     "
     " Why checking that there's a `%s` item? Shouldn't there always be one?{{{
     "
-    " Not necessarily. Watch:
+    " Not necessarily. MWE:
     "
     "     foo %s bar %s baz
     "
