@@ -96,7 +96,7 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
         " compute a code standing for the current combination
         " sth like 1010
         let code = a:cml.' '.join(map(range(1, len(a:sets)),
-        \                             {i,v -> index(a:sets[i], cbn[i])})
+        \                             {i -> index(a:sets[i], cbn[i])})
         \                         , '')
         let expanded_tmpl = s:get_expanded_template(a:tmpl, a:cbns[i-1])
 
