@@ -8,7 +8,7 @@ let s:analysis_file = s:dir.'/analysis.hydra'
 
 fu! s:all_combinations(sets) abort "{{{1
     let cbns = []
-    if len(a:sets) == 2
+    if len(a:sets) ==# 2
         for i in a:sets[0]
             for j in a:sets[1]
                 let cbns += [[i , j]]
@@ -57,7 +57,7 @@ fu! s:analyse() abort "{{{1
 
         " if we have only  1 code, there can't be any  invariant, and there's no
         " nothing to syntax highlight
-        if len(codes) == 1
+        if len(codes) ==# 1
             break
         endif
 
@@ -70,7 +70,7 @@ fu! s:analyse() abort "{{{1
         " ['4','4','4']  →  [0, 1, 0, 1]
         " ['5','6','7']
         " ['8','8','8']
-        let invariants = map(transposed_codes, {i,v -> v == filter(deepcopy(v), {j,w -> w ==# v[0] })})
+        let invariants = map(transposed_codes, {i,v -> v ==# filter(deepcopy(v), {j,w -> w ==# v[0] })})
         " [0, 1, 0, 1]  →  [0, 1, 0, 3]
         let invariants = map(invariants, {i,v -> v ? i : 0})
 
@@ -134,7 +134,7 @@ fu! s:create_match_invariants(codes, invariants) abort "{{{1
     for vcol in reverse(a:invariants)
         " We could filter `a:invariants`, but I prefer not to,
         " because it would break the alternative method (addind markers `v ^`).
-        if vcol == 0
+        if vcol ==# 0
             continue
         endif
         let coords = map(range(fline, lline), {i,v -> [v, 2*vcol+1]})
@@ -297,9 +297,9 @@ fu! hydra#main(line1,line2) abort "{{{1
 
         " check the range of lines looks valid;
         " i.e. has at least 2 `---` lines
-        if len(dlm_addr) == 1
+        if len(dlm_addr) ==# 1
             return s:msg('No delimiter (---) line')
-        elseif len(dlm_addr) == 2
+        elseif len(dlm_addr) ==# 2
             return s:msg('Not enough delimiter (---) lines')
         endif
 
