@@ -248,7 +248,7 @@ fu! s:get_observation_and_code(head) abort "{{{1
     let old_obs = matchstr(an_obs, '^.\{1,2}\s*obs\zs\d\+\ze\s*$')
     "                     ┌ make sure `s:new_obs[old_obs-1]` exists
     "                     │
-    if !empty(old_obs) && get(get(s:, 'new_obs', []), old_obs - 1, '') != ''
+    if !empty(old_obs) && get(get(s:, 'new_obs', []), old_obs - 1, '') isnot# ''
         let an_obs = s:new_obs[old_obs-1]
     elseif empty(old_obs)
         let s:new_obs = get(s:, 'new_obs', []) + [an_obs]
@@ -259,7 +259,7 @@ endfu
 fu! s:get_sets(dlm_addr) abort "{{{1
     let sets = []
     for i in range(1, len(a:dlm_addr)-1)
-        let set   = filter(getline(a:dlm_addr[i-1], a:dlm_addr[i]), {i,v -> v !=# '---'})
+        let set   = filter(getline(a:dlm_addr[i-1], a:dlm_addr[i]), {i,v -> v isnot# '---'})
         let sets += [ set ]
     endfor
     return sets
