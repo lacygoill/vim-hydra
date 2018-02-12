@@ -156,7 +156,7 @@ fu! s:create_match_invariants(codes, invariants) abort "{{{1
     " norm! {
     " " ' ^ ^'  →  ' v v'
     "
-    " sil put =matchstr(join(map(invariants, {i,v -> v ==# '^' ? 'v' : ' '})), '\v.*\s@<!')
+    " sil put =matchstr(join(map(invariants, {i,v -> v is# '^' ? 'v' : ' '})), '\v.*\s@<!')
     "
     " norm! }k
     " "      ^ important to get back exactly on the line where we wrote
@@ -201,7 +201,7 @@ fu! s:get_dlm_addr(line1,line2) abort "{{{1
 
     " Make the code work  even if we added an unnecessary `---`  line at the end
     " of the range.
-    if getline(a:line2) ==# '---'
+    if getline(a:line2) is# '---'
         let dlm_addr[-1] -= 1
     else
         let dlm_addr += [ a:line2 ]
@@ -272,7 +272,7 @@ fu! s:get_template(line1) abort "{{{1
     call cursor(a:line1, 1)
     " if the first line of the range is `---`, don't include
     " it in the template
-    let fline = getline(a:line1) ==# '---'
+    let fline = getline(a:line1) is# '---'
     \?              a:line1 + 1
     \:              a:line1
     let template = join(getline(fline, search('^---$', 'nW')-1), "\n")
