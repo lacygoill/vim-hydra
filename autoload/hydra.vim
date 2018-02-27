@@ -3,8 +3,8 @@ if exists('g:autoloaded_hydra')
 endif
 let g:autoloaded_hydra = 1
 
-let s:dir           = $XDG_RUNTIME_DIR.'/hydra'
-let s:analysis_file = s:dir.'/analysis.hydra'
+let s:DIR           = $XDG_RUNTIME_DIR.'/hydra'
+let s:ANALYSIS_FILE = s:DIR.'/analysis.hydra'
 
 fu! s:all_combinations(sets) abort "{{{1
     let cbns = []
@@ -30,13 +30,13 @@ fu! s:analyse() abort "{{{1
     " dictionary binding a list of codes to each observation
     let obs2codes = {}
     " iterate over the files such as `/run/user/1000/hydra/head01.ext`
-    let heads = glob(s:dir.'/head*.*', 0, 1)
+    let heads = glob(s:DIR.'/head*.*', 0, 1)
     for head in heads
         let [an_obs, code] = s:get_observation_and_code(head)
         let obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
     endfor
 
-    exe 'e '.s:analysis_file
+    exe 'e '.s:ANALYSIS_FILE
     setl nofoldenable nowrap
     call search('^# Observations', 'c')
     let c = 0
@@ -91,7 +91,7 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
         "                      ┌ padding of `0`, so that the filenames are sorted as expected
         "                      │ when there are more than 10 possible combinations
         "                      │
-        exe 'e '.s:dir.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.ext
+        exe 'e '.s:DIR.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.ext
         let cbn = a:cbns[i-1]
         " compute a code standing for the current combination
         " sth like 1010
@@ -111,7 +111,7 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     endfor
 
     " populate arglist with all generated files
-    exe 'args '.join(glob(s:dir.'/head*'.ext, 0, 1))
+    exe 'args '.join(glob(s:DIR.'/head*'.ext, 0, 1))
     first
     " enable statusline item showing position in the arglist
     let g:my_stl_list_position = 2
@@ -165,7 +165,7 @@ fu! s:create_match_invariants(codes, invariants) abort "{{{1
 endfu
 
 fu! s:empty_dir() abort "{{{1
-    call map(glob(s:dir.'/*', 0, 1),
+    call map(glob(s:DIR.'/*', 0, 1),
     \        {i,v -> (bufexists(v) && execute('bwipe! '.v)) + delete(v)})
     " Why do we need to delete a possible buffer?{{{
     "
@@ -318,8 +318,8 @@ fu! hydra#main(line1,line2) abort "{{{1
         " previous sets; get all of those new sets
         let cbns = s:all_combinations(sets)
         "   ^ combinations
-        if !isdirectory(s:dir)
-            call mkdir(s:dir, 'p')
+        if !isdirectory(s:DIR)
+            call mkdir(s:DIR, 'p')
         else
             call s:empty_dir()
         endif
@@ -346,7 +346,7 @@ fu! s:msg(msg) abort "{{{1
 endfu
 
 fu! s:prepare_analysis(sets) abort "{{{1
-    exe 'e '.s:analysis_file
+    exe 'e '.s:ANALYSIS_FILE
 
     sil $put=['# Code meaning']
     let i = 1
