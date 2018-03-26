@@ -228,8 +228,8 @@ fu! s:get_expanded_template(tmpl, cbn) abort "{{{1
     "       baz     (no `%s` item)
     "}}}
     call map(texts, {j,v -> v =~# '%s'
-    \?                          substitute(v, '%s', escape(a:cbn[j], '\~&'), '')
-    \:                          v })
+                        \ ?     substitute(v, '%s', escape(a:cbn[j], '\~&'), '')
+                        \ :     v })
     " join the texts and trim ending whitespace on each line
     return substitute(join(texts, ''), '\v\zs\s*\ze%($|\n)', '', 'g')
 endfu
@@ -273,8 +273,8 @@ fu! s:get_template(line1) abort "{{{1
     " if the first line of the range is `---`, don't include
     " it in the template
     let fline = getline(a:line1) is# '---'
-    \?              a:line1 + 1
-    \:              a:line1
+            \ ?     a:line1 + 1
+            \ :     a:line1
     let template = join(getline(fline, search('^---$', 'nW')-1), "\n")
     return template
 endfu
