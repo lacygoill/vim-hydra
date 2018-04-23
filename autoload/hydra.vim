@@ -3,7 +3,7 @@ if exists('g:autoloaded_hydra')
 endif
 let g:autoloaded_hydra = 1
 
-let s:DIR           = $XDG_RUNTIME_DIR.'/hydra'
+let s:DIR           = $XDG_RUNTIME_VIM.'/hydra'
 let s:ANALYSIS_FILE = s:DIR.'/analysis.hydra'
 
 fu! s:all_combinations(sets) abort "{{{1
