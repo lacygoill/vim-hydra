@@ -1,5 +1,4 @@
 runtime! ftplugin/markdown.vim
-let b:did_ftplugin = 1
 
 " teardown {{{1
 
