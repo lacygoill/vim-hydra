@@ -196,7 +196,7 @@ fu! s:get_dlm_addr(line1,line2) abort "{{{1
     let dlm_addr = []
     call cursor(a:line1, 1)
     while search('^---$', 'W') && line('.') <= a:line2
-        let dlm_addr += [ line('.') ]
+        let dlm_addr += [line('.')]
     endwhile
 
     " Make the code work  even if we added an unnecessary `---`  line at the end
@@ -204,7 +204,7 @@ fu! s:get_dlm_addr(line1,line2) abort "{{{1
     if getline(a:line2) is# '---'
         let dlm_addr[-1] -= 1
     else
-        let dlm_addr += [ a:line2 ]
+        let dlm_addr += [a:line2]
     endif
 
     return dlm_addr
@@ -260,7 +260,7 @@ fu! s:get_sets(dlm_addr) abort "{{{1
     let sets = []
     for i in range(1, len(a:dlm_addr)-1)
         let set   = filter(getline(a:dlm_addr[i-1], a:dlm_addr[i]), {i,v -> v isnot# '---'})
-        let sets += [ set ]
+        let sets += [set]
     endfor
     return sets
 endfu
