@@ -3,7 +3,7 @@ if exists('g:autoloaded_hydra')
 endif
 let g:autoloaded_hydra = 1
 
-let s:DIR           = $XDG_RUNTIME_VIM.'/hydra'
+let s:DIR = $XDG_RUNTIME_VIM.'/hydra'
 let s:ANALYSIS_FILE = s:DIR.'/analysis.hydra'
 
 fu! s:all_combinations(sets) abort "{{{1
@@ -55,24 +55,60 @@ fu! s:analyse() abort "{{{1
         call map(codes, {i,v -> split(v, '\zs')})
         sil put =map(deepcopy(codes), {i,v -> join(v)})
 
-        " if we have only  1 code, there can't be any  invariant, and there's no
+        " if we  have only  1 code,  there can't be  any invariant,  and there's
         " nothing to syntax highlight
         if len(codes) ==# 1
             break
         endif
 
-        " ['1','2']     ['1','3','5']
-        " ['3','4']  →  ['2','4','6']
-        " ['5','6']
-        let transposed_codes = call('lg#matrix_transposition', codes)
-
-        " ['1','2','3']
-        " ['4','4','4']  →  [0, 1, 0, 1]
-        " ['5','6','7']
-        " ['8','8','8']
-        let invariants = map(transposed_codes, {i,v -> v ==# filter(deepcopy(v), {j,w -> w ==# v[0] })})
-        " [0, 1, 0, 1]  →  [0, 1, 0, 3]
-        let invariants = map(invariants, {i,v -> v ? i : 0})
+        " Transpose the codes so that if there're invariants, they'll be found on lines, instead of columns:{{{
+        "
+        "     ['1','4','5','8']     ['1','2','3']
+        "     ['2','4','6','8']  →  ['4','4','4']
+        "     ['3','4','7','8']     ['5','6','7']
+        "                           ['8','8','8']
+        "}}}
+        let transposed_codes = call('lg#math#matrix_transposition', codes)
+        " Get a list boolean flags standing for the columns where there're invariants:{{{
+        "
+        "                           there are invariants on the 2nd and 4th LINES of the TRANSPOSED lists,
+        "                           so there are invariants on the 2nd and 4th COLUMNS of the ORIGINAL lists
+        "                           ✔     ✔
+        "     ['1','2','3']         v     v
+        "     ['4','4','4']  →  [0, 1, 0, 1]
+        "     ['5','6','7']      ^     ^
+        "     ['8','8','8']      ✘     ✘
+        "                        there're no invariants on the 1st and 3rd column
+        "
+        "}}}
+        let invariants = map(transposed_codes, {i,v -> v ==# filter(deepcopy(v), {j,w -> w ==# v[0]})})
+        " Translate every flag into a column index:{{{
+        "
+        "     [0, 1, 0, 1]  →  [0, 1, 0, 3]
+        "}}}
+        let invariants = map(invariants, {i,v -> v ? i+1 : 0})
+        "                                             ├┘{{{
+        "                                             └ Suppose the first column is an invariant.
+        " Its flag is on (value `1`).
+        "
+        " Here, if you write `i`, instead of `i+1`, the boolean flag `1` will be
+        " replaced with  the position  of the  column which  is `0`  (Vim starts
+        " indexing a list from `0`).
+        "
+        " But later, when we'll need to  filter out the columns where there's no
+        " invariant, we'll have no way to tell whether this `0` means:
+        "
+        "     • the first column is an invariant, and `0` is its index
+        "
+        "     • the first column is NOT an invariant, and its flag is off
+        "
+        " So, we temporarily offset the index of the columns to the right,
+        " to avoid the confusion later.
+        "}}}
+        " remove the columns where there's no invariant
+        call filter(invariants, {i,v -> v != 0})
+        " cancel the offset (`+1`) we've introduced in the previous `map()`
+        call map(invariants, {i,v -> v - 1})
 
         " add syntax highlighting for each column of identical digits
         " those are interesting invariants
@@ -102,9 +138,9 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
 
         sil $put =code
         sil $put =['',
-        \          a:cml.' Write your observation below (stop before ENDOBS):',
-        \          a:cml.' ENDOBS',
-        \          '']
+            \ a:cml.' Write your observation below (stop before ENDOBS):',
+            \ a:cml.' ENDOBS',
+            \ '']
         sil $put =expanded_tmpl
         0d_
         update
@@ -132,36 +168,11 @@ fu! s:create_match_invariants(codes, invariants) abort "{{{1
     " digits in reverse order.
     "}}}
     for vcol in reverse(a:invariants)
-        " We could filter `a:invariants`, but I prefer not to,
-        " because it would break the alternative method (addind markers `v ^`).
-        if vcol ==# 0
-            continue
-        endif
         let coords = map(range(fline, lline), {i,v -> [v, 2*vcol+1]})
         for coord in coords
             exe 'sil keepj keepp %s/\%'.coord[0].'l\%'.coord[1].'v./\~&\~/e'
         endfor
     endfor
-    " Alternative:{{{
-    " Instead of creating a match, you can also add a marker.
-    "
-    " " [0, 1, 0, 1]  →  [' ', '^', ' ', '^']
-    " call map(a:invariants, {i,v -> v ? '^' : ' '})
-    " " ' ^ ^'
-    "
-    " sil put =matchstr(join(a:invariants), '\v.*\s@<!')
-    " "        │
-    " "        └ trim ending whitespace if any
-    "
-    " norm! {
-    " " ' ^ ^'  →  ' v v'
-    "
-    " sil put =matchstr(join(map(invariants, {i,v -> v is# '^' ? 'v' : ' '})), '\v.*\s@<!')
-    "
-    " norm! }k
-    " "      ^ important to get back exactly on the line where we wrote
-    " "        ' ^ ^'
-    "}}}
 endfu
 
 fu! s:empty_dir() abort "{{{1
@@ -243,8 +254,8 @@ fu! s:get_observation_and_code(head) abort "{{{1
 
     " If the  user wrote `obs123`  as an observation,  expand it into  the 123th
     " observation.
-    "                                         ┌ possible comment leader
-    "                               ┌─────────┤
+    "                               ┌ possible comment leader
+    "                               ├─────────┐
     let old_obs = matchstr(an_obs, '^.\{1,2}\s*obs\zs\d\+\ze\s*$')
     "                     ┌ make sure `s:new_obs[old_obs-1]` exists
     "                     │
