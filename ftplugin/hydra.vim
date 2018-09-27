@@ -3,6 +3,7 @@ if exists('b:did_ftplugin')
 endif
 
 runtime! ftplugin/markdown.vim
+
 let b:did_ftplugin = 1
 
 " teardown {{{1
