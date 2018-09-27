@@ -6,10 +6,10 @@ runtime! ftplugin/markdown.vim
 unlet! b:did_ftplugin
 " Why do you `:unlet`, and then `:let` again right after?{{{
 "
-" We  should take  the habit  of  always `:unlet`  after using  `:runtime` in  a
-" filetype/indent/syntax plugin.
+" We  should take  the  habit of  always  doing an  `:unlet  b:...` after  using
+" `:runtime` in a filetype/indent/syntax plugin.
 " This way, if you add a new `:runtime` in the future, it will work as expected,
-" without a guard stopping the sourcing to end prematurely.
+" without a guard stopping the sourcing prematurely.
 "}}}
 
 let b:did_ftplugin = 1
