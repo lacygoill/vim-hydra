@@ -3,6 +3,7 @@ if exists('b:did_ftplugin')
 endif
 
 runtime! ftplugin/markdown.vim
+unlet! b:did_ftplugin
 
 let b:did_ftplugin = 1
 
