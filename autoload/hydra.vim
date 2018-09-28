@@ -58,7 +58,7 @@ fu! s:analyse() abort "{{{1
         " if we  have only  1 code,  there can't be  any invariant,  and there's
         " nothing to syntax highlight
         if len(codes) ==# 1
-            break
+            continue
         endif
 
         " Transpose the codes so that if there're invariants, they'll be found on lines, instead of columns:{{{
