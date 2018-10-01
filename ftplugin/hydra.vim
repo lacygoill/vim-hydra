@@ -12,6 +12,8 @@ unlet! b:did_ftplugin
 " without a guard stopping the sourcing prematurely.
 "}}}
 
+let b:title_like_in_markdown = 1
+
 let b:did_ftplugin = 1
 
 " teardown {{{1
@@ -19,5 +21,6 @@ let b:did_ftplugin = 1
 let b:undo_ftplugin =         get(b:, 'undo_ftplugin', '')
 \                     .(empty(get(b:, 'undo_ftplugin', '')) ? '' : '|')
 \                     ."
+\                        unlet! b:title_like_in_markdown
 \                        delc HydraAnalyse
 \                      "
