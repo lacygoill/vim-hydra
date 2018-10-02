@@ -3,6 +3,6 @@ if exists('did_load_filetypes')
 endif
 
 augroup filetypedetect
-    au! BufRead,BufNewFile  *.hydra  set hydra
+    au! BufRead,BufNewFile  *.hydra  setf hydra
 augroup END
 
