@@ -20,6 +20,8 @@ let b:did_ftplugin = 1
 
 let b:undo_ftplugin = get(b:, 'undo_ftplugin', '')
     \ . (empty(get(b:, 'undo_ftplugin', '')) ? '' : '|')
-    \ . 'unlet! b:title_like_in_markdown'
-    \ . '| delc HydraAnalyse'
+    \ . "
+    \ unlet! b:title_like_in_markdown
+    \|delc HydraAnalyse
+    \"
 
