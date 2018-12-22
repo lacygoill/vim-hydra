@@ -30,7 +30,7 @@ fu! s:analyse() abort "{{{1
     " dictionary binding a list of codes to each observation
     let obs2codes = {}
     " iterate over the files such as `/run/user/1000/hydra/head01.ext`
-    let heads = glob(s:DIR.'/head*.*', 0, 1)
+    let heads = glob(s:DIR.'/head*', 0, 1)
     for head in heads
         let [an_obs, code] = s:get_observation_and_code(head)
         let obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
