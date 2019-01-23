@@ -98,9 +98,9 @@ fu! s:analyse() abort "{{{1
         " But later, when we'll need to  filter out the columns where there's no
         " invariant, we'll have no way to tell whether this `0` means:
         "
-        "     • the first column is an invariant, and `0` is its index
+        "     - the first column is an invariant, and `0` is its index
         "
-        "     • the first column is NOT an invariant, and its flag is off
+        "     - the first column is NOT an invariant, and its flag is off
         "
         " So, we temporarily offset the index of the columns to the right,
         " to avoid the confusion later.
