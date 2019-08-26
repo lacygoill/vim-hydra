@@ -7,19 +7,19 @@
 " This code will  be useful to understand what are  the necessary and sufficient
 " conditions for some code to work as expected.
 "
-"     1. Generate all the possible commands/scripts which could execute the
-"        desired action.
+"    1. Generate all the possible commands/scripts which could execute the
+"       desired action.
 "
-"     2. Test each of them, and note the results.
+"    2. Test each of them, and note the results.
 "
-"     3. Regroup the commands/scripts which have the same result.
+"    3. Regroup the commands/scripts which have the same result.
 "
-"     4. Find invariants in them.
+"    4. Find invariants in them.
 "
-"     5. Deduce the necessary and sufficient conditions to produce each result
-"        you've seen.
+"    5. Deduce the necessary and sufficient conditions to produce each result
+"       you've seen.
 "
-"     6. Note these as rules.
+"    6. Note these as rules.
 
 " Examples {{{1
 
