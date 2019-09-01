@@ -52,8 +52,8 @@ fu! s:analyse() abort "{{{1
         sil put =(c ? [''] : []) + ['## '.obs] + ['']
         " write the list of codes below;
         " we split then join back to add a space between 2 consecutive digits
-        call map(codes, {i,v -> split(v, '\zs')})
-        sil put =map(deepcopy(codes), {i,v -> join(v)})
+        call map(codes, {_,v -> split(v, '\zs')})
+        sil put =map(deepcopy(codes), {_,v -> join(v)})
 
         " if we  have only  1 code,  there can't be  any invariant,  and there's
         " nothing to syntax highlight
@@ -81,7 +81,7 @@ fu! s:analyse() abort "{{{1
         "                        there're no invariants on the 1st and 3rd column
         "
         "}}}
-        let invariants = map(transposed_codes, {i,v -> v ==# filter(deepcopy(v), {j,w -> w ==# v[0]})})
+        let invariants = map(transposed_codes, {_,v -> v ==# filter(deepcopy(v), {_,w -> w ==# v[0]})})
         " Translate every flag into a column index:{{{
         "
         "     [0, 1, 0, 1]  →  [0, 1, 0, 3]
@@ -106,9 +106,9 @@ fu! s:analyse() abort "{{{1
         " to avoid the confusion later.
         "}}}
         " remove the columns where there's no invariant
-        call filter(invariants, {i,v -> v != 0})
+        call filter(invariants, {_,v -> v != 0})
         " cancel the offset (`+1`) we've introduced in the previous `map()`
-        call map(invariants, {i,v -> v - 1})
+        call map(invariants, {_,v -> v - 1})
 
         " add syntax highlighting for each column of identical digits
         " those are interesting invariants
@@ -168,7 +168,7 @@ fu! s:create_match_invariants(codes, invariants) abort "{{{1
     " digits in reverse order.
     "}}}
     for vcol in reverse(a:invariants)
-        let coords = map(range(fline, lline), {i,v -> [v, 2*vcol+1]})
+        let coords = map(range(fline, lline), {_,v -> [v, 2*vcol+1]})
         for coord in coords
             exe 'sil keepj keepp %s/\%'.coord[0].'l\%'.coord[1].'v./\~&\~/e'
         endfor
@@ -177,7 +177,7 @@ endfu
 
 fu! s:empty_dir() abort "{{{1
     call map(glob(s:DIR.'/*', 0, 1),
-    \        {i,v -> (bufexists(v) && execute('bwipe! '.v)) + delete(v)})
+    \        {_,v -> (bufexists(v) && execute('bwipe! '.v)) + delete(v)})
     " Why do we need to delete a possible buffer?{{{
     "
     " If a buffer exists, when we'll do `:e fname`, even if the file is deleted,
@@ -270,7 +270,7 @@ endfu
 fu! s:get_sets(dlm_addr) abort "{{{1
     let sets = []
     for i in range(1, len(a:dlm_addr)-1)
-        let set   = filter(getline(a:dlm_addr[i-1], a:dlm_addr[i]), {i,v -> v isnot# '---'})
+        let set   = filter(getline(a:dlm_addr[i-1], a:dlm_addr[i]), {_,v -> v isnot# '---'})
         let sets += [set]
     endfor
     return sets
