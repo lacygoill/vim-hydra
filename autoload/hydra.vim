@@ -3,8 +3,9 @@ if exists('g:autoloaded_hydra')
 endif
 let g:autoloaded_hydra = 1
 
-let s:DIR = $XDG_RUNTIME_VIM.'/hydra'
-let s:ANALYSIS_FILE = s:DIR.'/analysis.hydra'
+let s:DIR = getenv('XDG_RUNTIME_VIM') == v:null ? '/tmp' : $XDG_RUNTIME_VIM
+let s:DIR .= '/hydra'
+let s:ANALYSIS_FILE = s:DIR..'/analysis.hydra'
 
 fu! s:all_combinations(sets) abort "{{{1
     let cbns = []
@@ -30,13 +31,13 @@ fu! s:analyse() abort "{{{1
     " dictionary binding a list of codes to each observation
     let obs2codes = {}
     " iterate over the files such as `/run/user/1000/hydra/head01.ext`
-    let heads = glob(s:DIR.'/head*', 0, 1)
+    let heads = glob(s:DIR..'/head*', 0, 1)
     for head in heads
         let [an_obs, code] = s:get_observation_and_code(head)
         let obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
     endfor
 
-    exe 'e '.s:ANALYSIS_FILE
+    exe 'e '..s:ANALYSIS_FILE
     setl nofoldenable nowrap
     call search('^# Observations', 'c')
     let c = 0
@@ -46,10 +47,10 @@ fu! s:analyse() abort "{{{1
         " the observation is probably commented; try to guess what it is
         let cml = matchstr(obs, '\S\{1,2}\s')
         " remove it
-        let obs = substitute(obs, '\%(^\|\n\)\zs'.cml, '', 'g')
+        let obs = substitute(obs, '\%(^\|\n\)\zs'..cml, '', 'g')
 
         " write the observation (and make it a title)
-        sil put =(c ? [''] : []) + ['## '.obs] + ['']
+        sil put =(c ? [''] : []) + ['## '..obs] + ['']
         " write the list of codes below;
         " we split then join back to add a space between 2 consecutive digits
         call map(codes, {_,v -> split(v, '\zs')})
@@ -98,9 +99,9 @@ fu! s:analyse() abort "{{{1
         " But later, when we'll need to  filter out the columns where there's no
         " invariant, we'll have no way to tell whether this `0` means:
         "
-        "     - the first column is an invariant, and `0` is its index
+        "    - the first column is an invariant, and `0` is its index
         "
-        "     - the first column is NOT an invariant, and its flag is off
+        "    - the first column is NOT an invariant, and its flag is off
         "
         " So, we temporarily offset the index of the columns to the right,
         " to avoid the confusion later.
@@ -121,25 +122,25 @@ fu! s:analyse() abort "{{{1
 endfu
 
 fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
-    let ext = !empty(a:ext) ? '.'.a:ext : ''
+    let ext = !empty(a:ext) ? '.'..a:ext : ''
 
     for i in range(1,len(a:cbns))
-        "                      ┌ padding of `0`, so that the filenames are sorted as expected
-        "                      │ when there are more than 10 possible combinations
-        "                      │
-        exe 'e '.s:DIR.'/head'.repeat('0', len(len(a:cbns))-len(i)).i.ext
+        "                         ┌ padding of `0`, so that the filenames are sorted as expected
+        "                         │ when there are more than 10 possible combinations
+        "                         │
+        exe 'e '..s:DIR..'/head'..repeat('0', len(len(a:cbns))-len(i))..i..ext
         let cbn = a:cbns[i-1]
         " compute a code standing for the current combination
         " sth like 1010
-        let code = a:cml.' '.join(map(range(1, len(a:sets)),
+        let code = a:cml..' '..join(map(range(1, len(a:sets)),
         \                             {i -> index(a:sets[i], cbn[i])})
         \                         , '')
         let expanded_tmpl = s:get_expanded_template(a:tmpl, a:cbns[i-1])
 
         sil $put =code
         sil $put =['',
-            \ a:cml.' Write your observation below (stop before ENDOBS):',
-            \ a:cml.' ENDOBS',
+            \ a:cml..' Write your observation below (stop before ENDOBS):',
+            \ a:cml..' ENDOBS',
             \ '']
         sil $put =expanded_tmpl
         0d_
@@ -147,7 +148,7 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     endfor
 
     " populate arglist with all generated files
-    exe 'args '.join(glob(s:DIR.'/head*'.ext, 0, 1))
+    exe 'args '..join(glob(s:DIR..'/head*'..ext, 0, 1))
     first
     " enable statusline item showing position in the arglist
     let g:my_stl_list_position = 2
@@ -170,14 +171,14 @@ fu! s:create_match_invariants(codes, invariants) abort "{{{1
     for vcol in reverse(a:invariants)
         let coords = map(range(fline, lline), {_,v -> [v, 2*vcol+1]})
         for coord in coords
-            exe 'sil keepj keepp %s/\%'.coord[0].'l\%'.coord[1].'v./\~&\~/e'
+            exe 'sil keepj keepp %s/\%'..coord[0]..'l\%'..coord[1]..'v./\~&\~/e'
         endfor
     endfor
 endfu
 
 fu! s:empty_dir() abort "{{{1
-    call map(glob(s:DIR.'/*', 0, 1),
-    \        {_,v -> (bufexists(v) && execute('bwipe! '.v)) + delete(v)})
+    call map(glob(s:DIR..'/*', 0, 1),
+    \        {_,v -> (bufexists(v) && execute('bwipe! '..v)) + delete(v)})
     " Why do we need to delete a possible buffer?{{{
     "
     " If a buffer exists, when we'll do `:e fname`, even if the file is deleted,
@@ -353,19 +354,19 @@ fu! hydra#main(line1,line2) abort "{{{1
 endfu
 
 fu! s:msg(msg) abort "{{{1
-    return 'echoerr '.string(a:msg)
+    return 'echoerr '..string(a:msg)
 endfu
 
 fu! s:prepare_analysis(sets) abort "{{{1
-    exe 'e '.s:ANALYSIS_FILE
+    exe 'e '..s:ANALYSIS_FILE
 
     sil $put=['# Code meaning']
     let i = 1
     let ordinals = {'1': '1st', '2': '2nd', '3': '3rd'}
     for a_set in deepcopy(a:sets)
-        let ordinal = i <= 3 ? ordinals[i] : i.'th'
-        $put =['## '.ordinal.' digit', '']
-        call map(a_set, {i,v -> '~'.i.'~  '.(empty(v) ? '∅' : v)})
+        let ordinal = i <= 3 ? ordinals[i] : i..'th'
+        $put =['## '..ordinal..' digit', '']
+        call map(a_set, {i,v -> '~'..i..'~  '..(empty(v) ? '∅' : v)})
         sil $put =a_set + ['']
         let i += 1
     endfor
@@ -377,7 +378,7 @@ fu! s:prepare_analysis(sets) abort "{{{1
     0d_
     update
 
-    com! -bar -buffer -range=% HydraAnalyse  exe s:analyse()
+    com! -bar -buffer -range=% HydraAnalyse exe s:analyse()
 endfu
 
 fu! s:winrestview(view, orig_id) abort "{{{1
