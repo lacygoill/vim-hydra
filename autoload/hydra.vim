@@ -4,12 +4,12 @@ endif
 let g:autoloaded_hydra = 1
 
 let s:DIR = getenv('XDG_RUNTIME_VIM') == v:null ? '/tmp' : $XDG_RUNTIME_VIM
-let s:DIR .= '/hydra'
+let s:DIR ..= '/hydra'
 let s:ANALYSIS_FILE = s:DIR..'/analysis.hydra'
 
 fu! s:all_combinations(sets) abort "{{{1
     let cbns = []
-    if len(a:sets) ==# 2
+    if len(a:sets) == 2
         for i in a:sets[0]
             for j in a:sets[1]
                 let cbns += [[i , j]]
@@ -58,7 +58,7 @@ fu! s:analyse() abort "{{{1
 
         " if we  have only  1 code,  there can't be  any invariant,  and there's
         " nothing to syntax highlight
-        if len(codes) ==# 1
+        if len(codes) == 1
             continue
         endif
 
@@ -82,7 +82,7 @@ fu! s:analyse() abort "{{{1
         "                        there're no invariants on the 1st and 3rd column
         "
         "}}}
-        let invariants = map(transposed_codes, {_,v -> v ==# filter(deepcopy(v), {_,w -> w ==# v[0]})})
+        let invariants = map(transposed_codes, {_,v -> v == filter(deepcopy(v), {_,w -> w == v[0]})})
         " Translate every flag into a column index:{{{
         "
         "     [0, 1, 0, 1]  →  [0, 1, 0, 3]
@@ -309,9 +309,9 @@ fu! hydra#main(line1,line2) abort "{{{1
 
         " check the range of lines looks valid;
         " i.e. has at least 2 `---` lines
-        if len(dlm_addr) ==# 1
+        if len(dlm_addr) == 1
             return s:msg('No delimiter (---) line')
-        elseif len(dlm_addr) ==# 2
+        elseif len(dlm_addr) == 2
             return s:msg('Not enough delimiter (---) lines')
         endif
 
