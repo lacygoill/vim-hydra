@@ -43,10 +43,10 @@
 " ---
 
 " redraw
-" call timer_start(5, {-> execute('redraw', '')})
+" call timer_start(5, {_ -> execute('redraw', '')})
 " ---
 " echo 'hello'
-" call timer_start(0, {-> execute('echo "hello"', '')})
+" call timer_start(0, {_ -> execute('echo "hello"', '')})
 
 " Example2:
 
