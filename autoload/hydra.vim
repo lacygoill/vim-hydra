@@ -7,7 +7,7 @@ let s:DIR = getenv('XDG_RUNTIME_VIM') == v:null ? '/tmp' : $XDG_RUNTIME_VIM
 let s:DIR ..= '/hydra'
 let s:ANALYSIS_FILE = s:DIR..'/analysis.hydra'
 
-fu! s:all_combinations(sets) abort "{{{1
+fu s:all_combinations(sets) abort "{{{1
     let cbns = []
     if len(a:sets) == 2
         for i in a:sets[0]
@@ -27,7 +27,7 @@ fu! s:all_combinations(sets) abort "{{{1
     return cbns
 endfu
 
-fu! s:analyse() abort "{{{1
+fu s:analyse() abort "{{{1
     " dictionary binding a list of codes to each observation
     let obs2codes = {}
     " iterate over the files such as `/run/user/1000/hydra/head01.ext`
@@ -121,7 +121,7 @@ fu! s:analyse() abort "{{{1
     return ''
 endfu
 
-fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
+fu s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     let ext = !empty(a:ext) ? '.'..a:ext : ''
 
     for i in range(1,len(a:cbns))
@@ -155,7 +155,7 @@ fu! s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     sil! call lg#motion#repeatable#make#set_last_used(']a')
 endfu
 
-fu! s:create_match_invariants(codes, invariants) abort "{{{1
+fu s:create_match_invariants(codes, invariants) abort "{{{1
     " Add `~` characters around invariant digits, so that they are
     " syntax highlighted.
 
@@ -176,7 +176,7 @@ fu! s:create_match_invariants(codes, invariants) abort "{{{1
     endfor
 endfu
 
-fu! s:empty_dir() abort "{{{1
+fu s:empty_dir() abort "{{{1
     call map(glob(s:DIR..'/*', 0, 1),
     \        {_,v -> (bufexists(v) && execute('bwipe! '..v)) + delete(v)})
     " Why do we need to delete a possible buffer?{{{
@@ -200,7 +200,7 @@ fu! s:empty_dir() abort "{{{1
     "}}}
 endfu
 
-fu! s:get_dlm_addr(line1,line2) abort "{{{1
+fu s:get_dlm_addr(line1,line2) abort "{{{1
     "   ┌ delimiters addresses:
     "   │
     "   │       addresses of `---` lines inside the range
@@ -222,7 +222,7 @@ fu! s:get_dlm_addr(line1,line2) abort "{{{1
     return dlm_addr
 endfu
 
-fu! s:get_expanded_template(tmpl, cbn) abort "{{{1
+fu s:get_expanded_template(tmpl, cbn) abort "{{{1
     let texts = split(a:tmpl, '%s\zs')
     " Replace  each `%s`  item with  the appropriate  text, escaping  characters
     " which have a special meaning in  the replacement part of a substitution:
@@ -246,7 +246,7 @@ fu! s:get_expanded_template(tmpl, cbn) abort "{{{1
     return substitute(join(texts, ''), '\v\zs\s*\ze%($|\n)', '', 'g')
 endfu
 
-fu! s:get_observation_and_code(head) abort "{{{1
+fu s:get_observation_and_code(head) abort "{{{1
     let lines = readfile(a:head)
     let code = matchstr(lines[0], '\d\+')
     let i = match(lines, 'Write your observation')
@@ -268,7 +268,7 @@ fu! s:get_observation_and_code(head) abort "{{{1
     return [an_obs, code]
 endfu
 
-fu! s:get_sets(dlm_addr) abort "{{{1
+fu s:get_sets(dlm_addr) abort "{{{1
     let sets = []
     for i in range(1, len(a:dlm_addr)-1)
         let set   = filter(getline(a:dlm_addr[i-1], a:dlm_addr[i]), {_,v -> v isnot# '---'})
@@ -277,7 +277,7 @@ fu! s:get_sets(dlm_addr) abort "{{{1
     return sets
 endfu
 
-fu! s:get_template(line1) abort "{{{1
+fu s:get_template(line1) abort "{{{1
     " return all the lines between the first in the range,
     " and the next `---` line
 
@@ -291,7 +291,7 @@ fu! s:get_template(line1) abort "{{{1
     return template
 endfu
 
-fu! hydra#main(line1,line2) abort "{{{1
+fu hydra#main(line1,line2) abort "{{{1
     try
         let orig_id = win_getid()
         let view    = winsaveview()
@@ -353,11 +353,11 @@ fu! hydra#main(line1,line2) abort "{{{1
     return ''
 endfu
 
-fu! s:msg(msg) abort "{{{1
+fu s:msg(msg) abort "{{{1
     return 'echoerr '..string(a:msg)
 endfu
 
-fu! s:prepare_analysis(sets) abort "{{{1
+fu s:prepare_analysis(sets) abort "{{{1
     exe 'e '..s:ANALYSIS_FILE
 
     sil $put=['# Code meaning']
@@ -381,7 +381,7 @@ fu! s:prepare_analysis(sets) abort "{{{1
     com! -bar -buffer -range=% HydraAnalyse exe s:analyse()
 endfu
 
-fu! s:winrestview(view, orig_id) abort "{{{1
+fu s:winrestview(view, orig_id) abort "{{{1
     let now_id = win_getid()
     call win_gotoid(a:orig_id)
     call winrestview(a:view)

@@ -29,7 +29,7 @@
 
 " set %s
 " %s
-" fu! Func() abort
+" fu Func() abort
 "     %s
 "     %s
 "     return ''
@@ -66,4 +66,4 @@
 
 " Commands {{{1
 
-com! -bar -range=%  Hydra  exe hydra#main(<line1>,<line2>)
+com -bar -range=%  Hydra  exe hydra#main(<line1>,<line2>)
