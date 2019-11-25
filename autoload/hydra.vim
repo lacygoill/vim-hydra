@@ -150,8 +150,6 @@ fu s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     " populate arglist with all generated files
     exe 'args '..join(glob(s:DIR..'/head*'..ext, 0, 1))
     first
-    " enable statusline item showing position in the arglist
-    let g:my_stl_list_position = 2
     sil! call lg#motion#repeatable#make#set_last_used(']a')
 endfu
 
