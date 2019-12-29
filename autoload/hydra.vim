@@ -225,7 +225,7 @@ fu s:get_expanded_template(tmpl, cbn) abort "{{{1
     " Replace  each `%s`  item with  the appropriate  text, escaping  characters
     " which have a special meaning in  the replacement part of a substitution:
     "
-    "         \ ~ &
+    "     \ ~ &
     "
     " Why checking that there's a `%s` item? Shouldn't there always be one?{{{
     "
@@ -238,10 +238,10 @@ fu s:get_expanded_template(tmpl, cbn) abort "{{{1
     "       baz     (no `%s` item)
     "}}}
     call map(texts, {j,v -> v =~# '%s'
-                        \ ?     substitute(v, '%s', escape(a:cbn[j], '\~&'), '')
-                        \ :     v })
+        \ ? substitute(v, '%s', escape(a:cbn[j], '\~&'), '')
+        \ : v })
     " join the texts and trim ending whitespace on each line
-    return substitute(join(texts, ''), '\v\zs\s*\ze%($|\n)', '', 'g')
+    return substitute(join(texts, ''), '\zs\s*\ze\%($\|\n\)', '', 'g')
 endfu
 
 fu s:get_observation_and_code(head) abort "{{{1
