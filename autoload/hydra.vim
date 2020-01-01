@@ -292,9 +292,9 @@ endfu
 fu hydra#main(line1,line2) abort "{{{1
     try
         let orig_id = win_getid()
-        let view    = winsaveview()
-        let ext     = expand('%:e')
-        let cml     = get(split(&l:cms, '%s'), 0, '')
+        let view = winsaveview()
+        let ext = expand('%:e')
+        let cml = matchstr(&l:cms, '\S*\ze\s*%s')
 
         let template = s:get_template(a:line1)
         if empty(matchstr(template, '%s'))
