@@ -150,7 +150,6 @@ fu s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     " populate arglist with all generated files
     exe 'args '..join(glob(s:DIR..'/head*'..ext, 0, 1))
     first
-    sil! call lg#motion#repeatable#make#set_last_used(']a')
 endfu
 
 fu s:create_match_invariants(codes, invariants) abort "{{{1
