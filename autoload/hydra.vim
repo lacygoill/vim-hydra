@@ -328,7 +328,7 @@ fu hydra#main(line1,line2) abort "{{{1
         let cbns = s:all_combinations(sets)
         "   ^ combinations
         if !isdirectory(s:DIR)
-            call mkdir(s:DIR, 'p')
+            call mkdir(s:DIR, 'p', 0700)
         else
             call s:empty_dir()
         endif
