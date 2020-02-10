@@ -1,3 +1,8 @@
+if exists('g:loaded_hydra')
+    finish
+endif
+let g:loaded_hydra = 1
+
 " TODO:
 " Create documentation file.
 " Move the `Purpose` section there.
@@ -66,4 +71,4 @@
 
 " Commands {{{1
 
-com -bar -range=%  Hydra  exe hydra#main(<line1>,<line2>)
+com -bar -range=% Hydra exe hydra#main(<line1>,<line2>)
