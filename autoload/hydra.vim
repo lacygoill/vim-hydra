@@ -342,7 +342,7 @@ fu hydra#main(line1,line2) abort "{{{1
         "│     └ split window vertically, and load analysis file
         "└ load head file
     catch
-        return lg#catch_error()
+        return lg#catch()
     finally
         call s:winrestview(view, orig_id)
         unlet! s:new_obs
