@@ -124,7 +124,7 @@ endfu
 fu s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{1
     let ext = !empty(a:ext) ? '.'..a:ext : ''
 
-    for i in range(1,len(a:cbns))
+    for i in range(1, len(a:cbns))
         "                         ┌ padding of `0`, so that the filenames are sorted as expected
         "                         │ when there are more than 10 possible combinations
         "                         │
