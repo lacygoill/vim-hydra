@@ -2,7 +2,7 @@ if exists('b:current_syntax')
     finish
 endif
 
-syn region hydra_digit   matchgroup=DiffAdd start='\~' end='\~' oneline concealends
+syn region hydra_digit matchgroup=DiffAdd start='\~' end='\~' oneline concealends
 syn match hydra_section '^#.*'
 
 hi link hydra_digit   DiffAdd
