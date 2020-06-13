@@ -62,7 +62,7 @@ fu hydra#main(line1,line2) abort "{{{2
     "│     │   └ get back to head file
     "│     └ split window vertically, and load analysis file
     "└ load head file
-    call lg#win_execute(orig_id, 'call winrestview('..string(view)..')')
+    call win_execute(orig_id, 'call winrestview('..string(view)..')')
     unlet! s:new_obs
     return ''
 endfu
