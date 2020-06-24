@@ -130,7 +130,7 @@ fu s:all_combinations(sets) abort "{{{2
         for i in a:sets[0]
             for j in s:all_combinations(a:sets[1:])
                 let cbns += [[i] + j]
-                "            ^^^ list containing a string
+                "            ^-^ list containing a string
             endfor
         endfor
     endif
