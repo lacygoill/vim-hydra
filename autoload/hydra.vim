@@ -182,7 +182,7 @@ fu s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{2
             \ a:cml..' ENDOBS',
             \ '']
         sil $put =expanded_tmpl
-        0d_
+        keepj 0d_
         update
     endfor
 
@@ -233,7 +233,7 @@ fu s:prepare_analysis(sets) abort "{{{2
             \ '# Conclusion', '',
             \ 'Describe the heads according to their invariants:', '']
 
-    0d_
+    keepj 0d_
     update
 
     com! -bar -buffer -range=% HydraAnalyse exe s:analyse()
