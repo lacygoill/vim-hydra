@@ -24,10 +24,10 @@ let g:loaded_hydra = 1
 " for a  test; it  would send  a `C-a` keypress  to the  main Vim  instance (via
 " `--remote-expr`).  That would require a few things:
 "
-"    - maybe install a mapping which allows us to send an arbitrary observation
-"      to the current head file in the Vim server (consider a similar key binding
-"      in the shell when we're not testing Vim but sth else; the test will presumably
-"      be scripted from the shell)
+"    - maybe install a mapping which lets us send an arbitrary observation to the
+"      current head file in the Vim server (consider a similar key binding in the
+"      shell when we're not testing Vim but sth else; the test will presumably be
+"      scripted from the shell)
 "
 "    - when quitting a testing Vim instance, make the Vim server automatically load
 "      the next head file (iow, the current test and the current head file should be
