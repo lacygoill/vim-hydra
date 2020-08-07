@@ -5,9 +5,11 @@ let g:autoloaded_hydra = 1
 
 " Init {{{1
 
+import MatrixTransposition from 'lg/math.vim'
+
 let s:DIR = getenv('XDG_RUNTIME_VIM') == v:null ? '/tmp' : $XDG_RUNTIME_VIM
 let s:DIR ..= '/hydra'
-let s:ANALYSIS_FILE = s:DIR..'/analysis.hydra'
+let s:ANALYSIS_FILE = s:DIR .. '/analysis.hydra'
 
 " Interface {{{1
 fu hydra#main(line1,line2) abort "{{{2
@@ -17,7 +19,7 @@ fu hydra#main(line1,line2) abort "{{{2
     let cml = matchstr(&l:cms, '\S*\ze\s*%s')
 
     let template = s:get_template(a:line1)
-    if empty(matchstr(template, '%s'))
+    if matchstr(template, '%s')->empty()
         return s:msg('Provide a template')
     endif
 
@@ -62,7 +64,7 @@ fu hydra#main(line1,line2) abort "{{{2
     "│     │   └ get back to head file
     "│     └ split window vertically, and load analysis file
     "└ load head file
-    call win_execute(orig_id, 'call winrestview('..string(view)..')')
+    call win_execute(orig_id, 'call winrestview(' .. string(view) .. ')')
     unlet! s:new_obs
     return ''
 endfu
@@ -76,14 +78,14 @@ fu s:get_template(line1) abort "{{{2
     " if the first line of the range is `---`, don't include
     " it in the template
     let fline = getline(a:line1) is# '---'
-            \ ?     a:line1 + 1
-            \ :     a:line1
-    let template = join(getline(fline, search('^---$', 'nW')-1), "\n")
+        \ ?     a:line1 + 1
+        \ :     a:line1
+    let template = getline(fline, search('^---$', 'nW') - 1)->join("\n")
     return template
 endfu
 
 fu s:msg(msg) abort "{{{2
-    return 'echoerr '..string(a:msg)
+    return 'echoerr ' .. string(a:msg)
 endfu
 
 fu s:get_dlm_addr(line1,line2) abort "{{{2
@@ -110,8 +112,8 @@ endfu
 
 fu s:get_sets(dlm_addr) abort "{{{2
     let sets = []
-    for i in range(1, len(a:dlm_addr)-1)
-        let set   = filter(getline(a:dlm_addr[i-1], a:dlm_addr[i]), {_,v -> v isnot# '---'})
+    for i in range(1, len(a:dlm_addr) - 1)
+        let set = getline(a:dlm_addr[i - 1], a:dlm_addr[i])->filter({_, v -> v isnot# '---'})
         let sets += [set]
     endfor
     return sets
@@ -138,8 +140,8 @@ fu s:all_combinations(sets) abort "{{{2
 endfu
 
 fu s:empty_dir() abort "{{{2
-    call map(glob(s:DIR..'/*', 0, 1),
-        \ {_,v -> (bufexists(v) && execute('bwipe! '..v)) + delete(v)})
+    call glob(s:DIR .. '/*', 0, 1)
+        \ ->map({_, v -> (bufexists(v) && execute('bwipe! ' .. v)) + delete(v)})
     " Why do we need to delete a possible buffer?{{{
     "
     " If a buffer exists, when we'll do `:e fname`, even if the file is deleted,
@@ -150,44 +152,50 @@ fu s:empty_dir() abort "{{{2
     " Because  the `+`  operator has  priority over  `&&`, and  here we  want to
     " change the priority:
     "
-    "            bufexists(v) && execute('bwipe! '.v) + delete(v)
+    "            bufexists(v) && execute('bwipe! ' .. v) + delete(v)
     "         ⇔  if the buffer exists, delete both the buffer and the file
     "
     "            ⇒ if the buffer doesn't exist,  but the file does, the latter
     "              is not deleted ✘
     "
-    "           (bufexists(v) && execute('bwipe! '.v)) + delete(v)
+    "           (bufexists(v) && execute('bwipe! ' .. v)) + delete(v)
     "         ⇔  if the buffer exists, delete it, then no matter what, delete the file    ✔
     "}}}
 endfu
 
 fu s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{2
-    let ext = !empty(a:ext) ? '.'..a:ext : ''
+    let ext = !empty(a:ext) ? '.' .. a:ext : ''
 
     for i in range(1, len(a:cbns))
-        "                         ┌ padding of `0`, so that the filenames are sorted as expected
-        "                         │ when there are more than 10 possible combinations
-        "                         │
-        exe 'e '..s:DIR..'/head'..repeat('0', len(len(a:cbns))-len(i))..i..ext
+        "                               ┌ padding of `0`, so that the filenames are sorted as expected
+        "                               │ when there are more than 10 possible combinations
+        "                               │
+        exe 'e ' .. s:DIR .. '/head' .. repeat('0', len(a:cbns)->len() - len(i)) .. i .. ext
         let cbn = a:cbns[i-1]
         " compute a code standing for the current combination
         " sth like 1010
-        let code = a:cml..' '..join(map(range(1, len(a:sets)),
-            \ {i -> index(a:sets[i], cbn[i])}), '')
+        let code = a:cml
+            \ .. ' '
+            \ .. range(1, len(a:sets))
+            \ ->map({i -> index(a:sets[i], cbn[i])})
+            \ ->join('')
         let expanded_tmpl = s:get_expanded_template(a:tmpl, a:cbns[i-1])
 
-        sil $put =code
-        sil $put =['',
-            \ a:cml..' Write your observation below (stop before ENDOBS):',
-            \ a:cml..' ENDOBS',
-            \ '']
+        call append('$', code)
+        let lines = [
+            \ '',
+            \ a:cml .. ' Write your observation below (stop before ENDOBS):',
+            \ a:cml .. ' ENDOBS',
+            \ ''
+            \ ]
+        call append('$', lines)
         sil $put =expanded_tmpl
         keepj 0d_
         update
     endfor
 
     " populate arglist with all generated files
-    exe 'args '..join(glob(s:DIR..'/head*'..ext, 0, 1))
+    exe 'args ' .. glob(s:DIR .. '/head*' .. ext, 0, 1)->join()
     first
 endfu
 
@@ -200,7 +208,7 @@ fu s:get_expanded_template(tmpl, cbn) abort "{{{2
     "
     " Why checking that there's a `%s` item? Shouldn't there always be one?{{{
     "
-    " Not necessarily. MWE:
+    " Not necessarily.  MWE:
     "
     "     foo %s bar %s baz
     "
@@ -208,30 +216,36 @@ fu s:get_expanded_template(tmpl, cbn) abort "{{{2
     "       bar %s
     "       baz     (no `%s` item)
     "}}}
-    call map(texts, {j,v -> v =~# '%s'
+    call map(texts, {j, v -> v =~# '%s'
         \ ? substitute(v, '%s', escape(a:cbn[j], '\~&'), '')
         \ : v })
     " join the texts and trim ending whitespace on each line
-    return substitute(join(texts, ''), '\zs\s*\ze\%($\|\n\)', '', 'g')
+    return join(texts, '')->substitute('\zs\s*\ze\%($\|\n\)', '', 'g')
 endfu
 
 fu s:prepare_analysis(sets) abort "{{{2
-    exe 'e '..s:ANALYSIS_FILE
+    exe 'e ' .. s:ANALYSIS_FILE
 
-    sil $put=['# Code meaning']
+    call append('$', '# Code meaning')
     let i = 1
     let ordinals = {'1': '1st', '2': '2nd', '3': '3rd'}
     for a_set in deepcopy(a:sets)
-        let ordinal = i <= 3 ? ordinals[i] : i..'th'
-        $put =['## '..ordinal..' digit', '']
-        call map(a_set, {i,v -> '~'..i..'~  '..(empty(v) ? '∅' : v)})
-        sil $put =a_set + ['']
+        let ordinal = i <= 3 ? ordinals[i] : i .. 'th'
+        call append('$', ['## ' .. ordinal .. ' digit', ''])
+        call map(a_set, {i, v -> '~' .. i .. '~  ' .. (empty(v) ? '∅' : v)})
+        call append('$',a_set + [''])
         let i += 1
     endfor
 
-    sil $put=['# Observations', '',
-            \ '# Conclusion', '',
-            \ 'Describe the heads according to their invariants:', '']
+    let lines =<< trim END
+        # Observations
+
+        # Conclusion
+
+        Describe the heads according to their invariants:
+
+    END
+    call append('$', lines)
 
     keepj 0d_
     update
@@ -243,13 +257,13 @@ fu s:analyse() abort "{{{2
     " dictionary binding a list of codes to each observation
     let obs2codes = {}
     " iterate over the files such as `/run/user/1000/hydra/head01.ext`
-    let heads = glob(s:DIR..'/head*', 0, 1)
+    let heads = glob(s:DIR .. '/head*', 0, 1)
     for head in heads
         let [an_obs, code] = s:get_observation_and_code(head)
         let obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
     endfor
 
-    exe 'e '..s:ANALYSIS_FILE
+    exe 'e ' .. s:ANALYSIS_FILE
     setl nofoldenable nowrap
     call search('^# Observations', 'c')
     let c = 0
@@ -259,14 +273,18 @@ fu s:analyse() abort "{{{2
         " the observation is probably commented; try to guess what it is
         let cml = matchstr(obs, '\S\{1,2}\s')
         " remove it
-        let obs = substitute(obs, '\%(^\|\n\)\zs'..cml, '', 'g')
+        let obs = substitute(obs, '\%(^\|\n\)\zs' .. cml, '', 'g')
 
         " write the observation (and make it a title)
-        sil put =(c ? [''] : []) + ['## '..obs] + ['']
+        let lines = (c ? [''] : []) + ['## ' .. obs] + ['']
+        call append('.', lines)
+        exe '+' .. len(lines)
         " write the list of codes below;
         " we split then join back to add a space between 2 consecutive digits
-        call map(codes, {_,v -> split(v, '\zs')})
-        sil put =map(deepcopy(codes), {_,v -> join(v)})
+        call map(codes, {_, v -> split(v, '\zs')})
+        let lines = deepcopy(codes)->map({_, v -> join(v)})
+        call append('.', lines)
+        exe '+' .. len(lines)
 
         " if we  have only  1 code,  there can't be  any invariant,  and there's
         " nothing to syntax highlight
@@ -281,7 +299,7 @@ fu s:analyse() abort "{{{2
         "     ['3','4','7','8']     ['5','6','7']
         "                           ['8','8','8']
         "}}}
-        let transposed_codes = call('lg#math#matrix_transposition', [codes])
+        let transposed_codes = call('s:MatrixTransposition', [codes])
         " Get a list boolean flags standing for the columns where there're invariants:{{{
         "
         "                           there are invariants on the 2nd and 4th LINES of the TRANSPOSED lists,
@@ -294,14 +312,14 @@ fu s:analyse() abort "{{{2
         "                        there're no invariants on the 1st and 3rd column
         "
         "}}}
-        let invariants = map(transposed_codes, {_,v -> v == filter(deepcopy(v), {_,w -> w == v[0]})})
+        let invariants = map(transposed_codes, {_, v -> v == deepcopy(v)->filter({_,w -> w == v[0]})})
         " Translate every flag into a column index:{{{
         "
         "     [0, 1, 0, 1]  →  [0, 1, 0, 3]
         "}}}
-        let invariants = map(invariants, {i,v -> v ? i+1 : 0})
-        "                                             ├┘{{{
-        "                                             └ Suppose the first column is an invariant.
+        let invariants = map(invariants, {i, v -> v ? i + 1 : 0})
+        "                                               ├─┘{{{
+        "                                               └ Suppose the first column is an invariant.
         " Its flag is on (value `1`).
         "
         " Here, if you write `i`, instead of `i+1`, the boolean flag `1` will be
@@ -319,9 +337,9 @@ fu s:analyse() abort "{{{2
         " to avoid the confusion later.
         "}}}
         " remove the columns where there's no invariant
-        call filter(invariants, {_,v -> v != 0})
+        call filter(invariants, {_, v -> v != 0})
         " cancel the offset (`+1`) we've introduced in the previous `map()`
-        call map(invariants, {_,v -> v - 1})
+        call map(invariants, {_, v -> v - 1})
 
         " add syntax highlighting for each column of identical digits
         " those are interesting invariants
@@ -347,9 +365,9 @@ fu s:create_match_invariants(codes, invariants) abort "{{{2
     " digits in reverse order.
     "}}}
     for vcol in reverse(a:invariants)
-        let coords = map(range(fline, lline), {_,v -> [v, 2*vcol+1]})
+        let coords = range(fline, lline)->map({_, v -> [v, 2 * vcol + 1]})
         for coord in coords
-            exe 'sil keepj keepp %s/\%'..coord[0]..'l\%'..coord[1]..'v./\~&\~/e'
+            exe 'sil keepj keepp %s/\%' .. coord[0] .. 'l\%' .. coord[1] .. 'v./\~&\~/e'
         endfor
     endfor
 endfu
@@ -366,9 +384,9 @@ fu s:get_observation_and_code(head) abort "{{{2
     "                               ┌ possible comment leader
     "                               ├─────────┐
     let old_obs = matchstr(an_obs, '^.\{1,2}\s*obs\zs\d\+\ze\s*$')
-    "                     ┌ make sure `s:new_obs[old_obs-1]` exists
-    "                     │
-    if !empty(old_obs) && get(get(s:, 'new_obs', []), old_obs - 1, '') isnot# ''
+    "                                             ┌ make sure `s:new_obs[old_obs-1]` exists
+    "                                             │
+    if !empty(old_obs) && get(s:, 'new_obs', [])->get(old_obs - 1, '') != ''
         let an_obs = s:new_obs[old_obs-1]
     elseif empty(old_obs)
         let s:new_obs = get(s:, 'new_obs', []) + [an_obs]

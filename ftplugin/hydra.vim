@@ -19,5 +19,5 @@ let b:did_ftplugin = 1
 " Teardown {{{1
 
 let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe')
-    \ ..'| unlet! b:title_like_in_markdown | delc HydraAnalyse'
+    \ .. '| unlet! b:title_like_in_markdown | delc HydraAnalyse'
 
