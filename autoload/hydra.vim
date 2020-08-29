@@ -323,7 +323,7 @@ fu s:analyse() abort "{{{2
         " Its flag is on (value `1`).
         "
         " Here, if you write `i`, instead of `i+1`, the boolean flag `1` will be
-        " replaced with  the position  of the  column which  is `0`  (Vim starts
+        " replaced  by the  position  of the  column which  is  `0` (Vim  starts
         " indexing a list from `0`).
         "
         " But later, when we'll need to  filter out the columns where there's no
