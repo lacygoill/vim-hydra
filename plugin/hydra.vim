@@ -79,8 +79,8 @@ let g:loaded_hydra = 1
 " nolz
 " lz
 " ---
-" nno        cd :call Func()<cr>
-" nno <expr> cd       Func()
+" nno        cd <cmd>call Func()<cr>
+" nno <expr> cd           Func()
 " ---
 "
 " redraw
