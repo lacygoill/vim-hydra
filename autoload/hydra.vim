@@ -229,11 +229,11 @@ fu s:prepare_analysis(sets) abort "{{{2
     call append('$', '# Code meaning')
     let i = 1
     let ordinals = {'1': '1st', '2': '2nd', '3': '3rd'}
-    for a_set in deepcopy(a:sets)
+    for a_set in a:sets
         let ordinal = i <= 3 ? ordinals[i] : i .. 'th'
         call append('$', ['## ' .. ordinal .. ' digit', ''])
-        call map(a_set, {i, v -> '~' .. i .. '~  ' .. (empty(v) ? '∅' : v)})
-        call append('$',a_set + [''])
+        call mapnew(a_set, {i, v -> '~' .. i .. '~  ' .. (empty(v) ? '∅' : v)})
+        call append('$', a_set + [''])
         let i += 1
     endfor
 
@@ -282,7 +282,7 @@ fu s:analyse() abort "{{{2
         " write the list of codes below;
         " we split then join back to add a space between 2 consecutive digits
         call map(codes, {_, v -> split(v, '\zs')})
-        let lines = deepcopy(codes)->map({_, v -> join(v)})
+        let lines = mapnew(codes, {_, v -> join(v)})
         call append('.', lines)
         exe '+' .. len(lines)
 
