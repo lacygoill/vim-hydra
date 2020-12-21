@@ -7,7 +7,7 @@ let g:autoloaded_hydra = 1
 
 import MatrixTransposition from 'lg/math.vim'
 
-let s:DIR = getenv('XDG_RUNTIME_VIM') == v:null ? '/tmp' : $XDG_RUNTIME_VIM
+let s:DIR = getenv('XDG_RUNTIME_VIM') ?? '/tmp'
 let s:DIR ..= '/hydra'
 let s:ANALYSIS_FILE = s:DIR .. '/analysis.hydra'
 
