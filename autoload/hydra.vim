@@ -130,7 +130,7 @@ fu s:all_combinations(sets) abort "{{{2
         endfor
     else
         for i in a:sets[0]
-            for j in s:all_combinations(a:sets[1:])
+            for j in s:all_combinations(a:sets[1 :])
                 let cbns += [[i] + j]
                 "            ^-^ list containing a string
             endfor
@@ -377,7 +377,7 @@ fu s:get_observation_and_code(head) abort "{{{2
     let code = matchstr(lines[0], '\d\+')
     let i = match(lines, 'Write your observation')
     let j = match(lines, 'ENDOBS$')
-    let an_obs = join(lines[i+1:j-1], "\n")
+    let an_obs = join(lines[i + 1 : j - 1], "\n")
 
     " If the  user wrote `obs123`  as an observation,  expand it into  the 123th
     " observation.
