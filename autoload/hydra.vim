@@ -140,7 +140,7 @@ fu s:all_combinations(sets) abort "{{{2
 endfu
 
 fu s:empty_dir() abort "{{{2
-    call glob(s:DIR .. '/*', 0, 1)
+    call glob(s:DIR .. '/*', v:false, v:true)
         \ ->map({_, v -> (bufexists(v) && execute('bwipe! ' .. v)) + delete(v)})
     " Why do we need to delete a possible buffer?{{{
     "
@@ -195,7 +195,7 @@ fu s:create_hydra_heads(tmpl, cbns, sets, ext, cml) abort "{{{2
     endfor
 
     " populate arglist with all generated files
-    exe 'args ' .. glob(s:DIR .. '/head*' .. ext, 0, 1)->join()
+    exe 'args ' .. glob(s:DIR .. '/head*' .. ext, v:false, v:true)->join()
     first
 endfu
 
@@ -257,7 +257,7 @@ fu s:analyse() abort "{{{2
     " dictionary binding a list of codes to each observation
     let obs2codes = {}
     " iterate over the files such as `/run/user/1000/hydra/head01.ext`
-    let heads = glob(s:DIR .. '/head*', 0, 1)
+    let heads = glob(s:DIR .. '/head*', v:false, v:true)
     for head in heads
         let [an_obs, code] = s:get_observation_and_code(head)
         let obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
