@@ -1,9 +1,9 @@
-if exists('g:autoloaded_hydra')
-    finish
-endif
-let g:autoloaded_hydra = 1
+vim9 noclear
 
-" Init {{{1
+if exists('loaded') | finish | endif
+var loaded = true
+
+# Init {{{1
 
 import MatrixTransposition from 'lg/math.vim'
 
@@ -11,7 +11,7 @@ let s:DIR = getenv('XDG_RUNTIME_VIM') ?? '/tmp'
 let s:DIR ..= '/hydra'
 let s:ANALYSIS_FILE = s:DIR .. '/analysis.hydra'
 
-" Interface {{{1
+# Interface {{{1
 fu hydra#main(line1,line2) abort "{{{2
     let orig_id = win_getid()
     let view = winsaveview()
@@ -51,7 +51,7 @@ fu hydra#main(line1,line2) abort "{{{2
     let cbns = s:all_combinations(sets)
     "   ^ combinations
     if !isdirectory(s:DIR)
-        call mkdir(s:DIR, 'p', 0700)
+        call mkdir(s:DIR, 'p', 0o700)
     else
         call s:empty_dir()
     endif
@@ -68,8 +68,8 @@ fu hydra#main(line1,line2) abort "{{{2
     unlet! s:new_obs
     return ''
 endfu
-"}}}1
-" Core {{{1
+#}}}1
+# Core {{{1
 fu s:get_template(line1) abort "{{{2
     " return all the lines between the first in the range,
     " and the next `---` line
