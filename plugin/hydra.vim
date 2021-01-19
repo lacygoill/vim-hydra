@@ -115,4 +115,4 @@ var loaded = true
 
 # Commands {{{1
 
-com -bar -range=% Hydra exe hydra#main(<line1>, <line2>)
+com -bar -range=% Hydra hydra#main(<line1>, <line2>)
