@@ -100,7 +100,7 @@ def GetDlmAddr(line1: number, line2: number): list<number> #{{{2
     # addresses of `---` lines inside the range + last line of the range
     var dlm_addr: list<number> = []
     cursor(line1, 1)
-    while search('^---$', 'W') != 0 && line('.') <= line2
+    while search('^---$', 'W') > 0 && line('.') <= line2
         dlm_addr += [line('.')]
     endwhile
 
@@ -264,7 +264,7 @@ def Analyse() #{{{2
         obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
     endfor
 
-    exe 'e ' .. s:ANALYSIS_FILE
+    exe 'e ' .. ANALYSIS_FILE
     setl nofoldenable nowrap
     search('^# Observations', 'c')
     var c: number = 0
