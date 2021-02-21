@@ -7,9 +7,9 @@ var loaded = true
 
 import MatrixTransposition from 'lg/math.vim'
 
-var DIR = getenv('XDG_RUNTIME_VIM') ?? '/tmp'
+var DIR: string = getenv('XDG_RUNTIME_VIM') ?? '/tmp'
 DIR ..= '/hydra'
-const ANALYSIS_FILE = DIR .. '/analysis.hydra'
+const ANALYSIS_FILE: string = DIR .. '/analysis.hydra'
 
 # Interface {{{1
 def hydra#main(line1: number, line2: number) #{{{2
@@ -89,7 +89,7 @@ def GetTemplate(line1: number): string #{{{2
     return getline(fline, search('^---$', 'nW') - 1)->join("\n")
 enddef
 
-def Error(msg: string): string #{{{2
+def Error(msg: string) #{{{2
     echohl ErrorMsg
     echom msg
     echohl NONE
@@ -119,7 +119,7 @@ def GetSets(dlm_addr: list<number>): list<list<string>> #{{{2
     var sets: list<list<string>> = []
     for i in range(1, len(dlm_addr) - 1)
         var set: list<string> = getline(dlm_addr[i - 1], dlm_addr[i])
-            ->filter((_, v) => v != '---')
+            ->filter((_, v: string): bool => v != '---')
         sets += [set]
     endfor
     return sets
@@ -147,7 +147,7 @@ enddef
 
 def EmptyDir() #{{{2
     glob(DIR .. '/*', false, true)
-        ->mapnew((_, v) => [bufexists(v) && !!execute('bwipe! ' .. v), delete(v)])
+        ->mapnew((_, v: string) => [bufexists(v) && !!execute('bwipe! ' .. v), delete(v)])
     # Why do we need to delete a possible buffer?{{{
     #
     # If a buffer exists, when we'll do `:e fname`, even if the file is deleted,
@@ -176,7 +176,7 @@ def CreateHydraHeads( #{{{2
         var code: string = cml
             .. ' '
             .. range(1, len(sets))
-            ->map((i) => index(sets[i], cbn[i]))
+            ->map((i: number): number => index(sets[i], cbn[i]))
             ->join('')
         var expanded_tmpl: string = GetExpandedTemplate(tmpl, cbns[i - 1])
 
@@ -200,24 +200,26 @@ enddef
 
 def GetExpandedTemplate(tmpl: string, cbn: list<string>): string #{{{2
     var texts: list<string> = split(tmpl, '%s\zs')
-    # Replace  each `%s`  item with  the appropriate  text, escaping  characters
-    # which have a special meaning in  the replacement part of a substitution:
-    #
-    #     \ ~ &
-    #
-    # Why checking that there's a `%s` item? Shouldn't there always be one?{{{
-    #
-    # Not necessarily.  MWE:
-    #
-    #     foo %s bar %s baz
-    #
-    #     → foo %s
-    #       bar %s
-    #       baz     (no `%s` item)
-    #}}}
-    map(texts, (j, v) => v =~ '%s'
-        ? substitute(v, '%s', escape(cbn[j], '\~&'), '')
-        : v )
+        # Replace each `%s` item with  the appropriate text, escaping characters
+        # which  have   a  special  meaning   in  the  replacement  part   of  a
+        # substitution:
+        #
+        #     \ ~ &
+        #
+        # Why checking that there's a `%s` item? Shouldn't there always be one?{{{
+        #
+        # Not necessarily.  MWE:
+        #
+        #     foo %s bar %s baz
+        #
+        #     → foo %s
+        #       bar %s
+        #       baz     (no `%s` item)
+        #}}}
+        ->map((j: number, v: string): string => v =~ '%s'
+            ? substitute(v, '%s', escape(cbn[j], '\~&'), '')
+            : v
+            )
     # join the texts and trim ending whitespace on each line
     return join(texts, '')->substitute('\zs\s*\ze\%($\|\n\)', '', 'g')
 enddef
@@ -231,8 +233,10 @@ def PrepareAnalysis(sets: list<list<string>>) #{{{2
     for a_set in sets
         var ordinal: string = i <= 3 ? ordinals[i] : i .. 'th'
         append('$', ['## ' .. ordinal .. ' digit', ''])
-        mapnew(a_set, (i, v) => '~' .. i .. '~  ' .. (empty(v) ? '∅' : v))
-        append('$', a_set + [''])
+        (a_set
+            ->mapnew((j: number, v: string): string =>
+                '~' .. j .. '~  ' .. (empty(v) ? '∅' : v))
+        + [''])->append('$')
         i += 1
     endfor
 
@@ -282,8 +286,9 @@ def Analyse() #{{{2
         exe ':+' .. len(lines)
         # write the list of codes below;
         # we split then join back to add a space between 2 consecutive digits
-        var mcodes: list<list<string>> = mapnew(codes, (_, v) => split(v, '\zs'))
-        lines = mapnew(mcodes, (_, v) => join(v))
+        var mcodes: list<list<string>> = codes
+            ->mapnew((_, v: string): list<string> => split(v, '\zs'))
+        lines = mapnew(mcodes, (_, v: list<string>): string => join(v))
         append('.', lines)
         exe ':+' .. len(lines)
 
@@ -302,8 +307,8 @@ def Analyse() #{{{2
         #}}}
         var transposed_codes: list<list<number>> = call(MatrixTransposition, [
             mcodes
-                ->mapnew((_, v) => v
-                                ->mapnew((_, w) => w->str2nr()))
+                ->mapnew((_, v: list<string>): list<number> =>
+                    v->mapnew((_, w: string): number => w->str2nr()))
             ])
         # Get a list of boolean flags standing for the columns where there're invariants:{{{
         #
@@ -317,37 +322,40 @@ def Analyse() #{{{2
         #                        there're no invariants on the 1st and 3rd column
         #
         #}}}
-        var invariants: list<bool> = mapnew(transposed_codes, (_, v) =>
-            v == deepcopy(v)->filter((_, w) => w == v[0]))
+        var invariants: list<bool> = transposed_codes
+            ->mapnew((_, v: list<number>): bool =>
+                v == deepcopy(v)->filter((_, w: number): bool => w == v[0]))
         # Translate every flag into a column index:{{{
         #
         #     [0, 1, 0, 1]  →  [0, 1, 0, 3]
         #}}}
-        var minvariants: list<number> = mapnew(invariants, (i, v) =>
-            v ? i + 1 : 0)
-        #         ├─┘{{{
-        #         └ Suppose the first column is an invariant.
-        #
-        # Its flag is on (value `1`).
-        #
-        # Here, if you write `i`, instead of `i+1`, the boolean flag `1` will be
-        # replaced  by the  position  of the  column which  is  `0` (Vim  starts
-        # indexing a list from `0`).
-        #
-        # But later, when we'll need to  filter out the columns where there's no
-        # invariant, we'll have no way to tell whether this `0` means:
-        #
-        #    - the first column is an invariant, and `0` is its index
-        #
-        #    - the first column is NOT an invariant, and its flag is off
-        #
-        # So, we temporarily offset the index of the columns to the right,
-        # to avoid the confusion later.
-        #}}}
-        # remove the columns where there's no invariant
-        filter(minvariants, (_, v) => v != 0)
-        # cancel the offset (`+1`) we've introduced in the previous `map()`
-        map(minvariants, (_, v) => v - 1)
+        var minvariants: list<number> = invariants
+            ->mapnew((i: number, v: bool): number =>
+                v ? i + 1 : 0)
+            #             ├─┘{{{
+            #             └ Suppose the first column is an invariant.
+            #
+            # Its flag is on (value `1`).
+            #
+            # Here, if you write `i`, instead of `i+1`, the boolean flag `1`
+            # will be  replaced by the position  of the column which  is `0`
+            # (Vim starts indexing a list from `0`).
+            #
+            # But later,  when we'll  need to filter  out the  columns where
+            # there's no invariant,  we'll have no way to  tell whether this
+            # `0` means:
+            #
+            #    - the first column is an invariant, and `0` is its index
+            #
+            #    - the first column is NOT an invariant, and its flag is off
+            #
+            # So,  we temporarily  offset the  index of  the columns  to the
+            # right, to avoid the confusion later.
+            #}}}
+            # remove the columns where there's no invariant
+            ->filter((_, v: number): bool => v != 0)
+            # cancel the offset (`+1`) we've introduced in the previous `map()`
+            ->map((_, v: number): number => v - 1)
 
         # add syntax highlighting for each column of identical digits
         # those are interesting invariants
@@ -373,7 +381,7 @@ def CreateMatchInvariants(codes: list<list<string>>, invariants: list<number>) #
     #}}}
     for vcol in reverse(invariants)
         var coords: list<list<number>> = range(fline, lline)
-            ->mapnew((_, v) => [v, 2 * vcol + 1])
+            ->mapnew((_, v: number): list<number> => [v, 2 * vcol + 1])
         for coord in coords
             exe 'sil keepj keepp :%s/\%' .. coord[0] .. 'l\%' .. coord[1] .. 'v./\~&\~/e'
         endfor
@@ -381,7 +389,7 @@ def CreateMatchInvariants(codes: list<list<string>>, invariants: list<number>) #
 enddef
 
 def GetObservationAndCode(head: string): list<string> #{{{2
-    var lines = readfile(head)
+    var lines: list<string> = readfile(head)
     var code: string = matchstr(lines[0], '\d\+')
     var i: number = match(lines, 'Write your observation')
     var j: number = match(lines, 'ENDOBS$')
