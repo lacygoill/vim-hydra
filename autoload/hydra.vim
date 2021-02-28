@@ -98,7 +98,7 @@ enddef
 def GetDlmAddr(line1: number, line2: number): list<number> #{{{2
     # delimiters addresses:
     # addresses of `---` lines inside the range + last line of the range
-    var dlm_addr: list<number> = []
+    var dlm_addr: list<number>
     cursor(line1, 1)
     while search('^---$', 'W') > 0 && line('.') <= line2
         dlm_addr += [line('.')]
@@ -116,7 +116,7 @@ def GetDlmAddr(line1: number, line2: number): list<number> #{{{2
 enddef
 
 def GetSets(dlm_addr: list<number>): list<list<string>> #{{{2
-    var sets: list<list<string>> = []
+    var sets: list<list<string>>
     for i in range(1, len(dlm_addr) - 1)
         var set: list<string> = getline(dlm_addr[i - 1], dlm_addr[i])
             ->filter((_, v: string): bool => v != '---')
@@ -126,7 +126,7 @@ def GetSets(dlm_addr: list<number>): list<list<string>> #{{{2
 enddef
 
 def AllCombinations(sets: list<list<string>>): list<list<string>> #{{{2
-    var cbns: list<list<string>> = []
+    var cbns: list<list<string>>
     if len(sets) == 2
         for i in sets[0]
             for j in sets[1]
@@ -258,7 +258,7 @@ enddef
 
 def Analyse() #{{{2
     # dictionary binding a list of codes to each observation
-    var obs2codes: dict<list<string>> = {}
+    var obs2codes: dict<list<string>>
     # iterate over the files such as `/run/user/1000/hydra/head01.ext`
     var heads: list<string> = glob(DIR .. '/head*', false, true)
     for head in heads
