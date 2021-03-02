@@ -147,7 +147,10 @@ enddef
 
 def EmptyDir() #{{{2
     glob(DIR .. '/*', false, true)
-        ->mapnew((_, v: string) => [bufexists(v) && !!execute('bwipe! ' .. v), delete(v)])
+        ->mapnew((_, v: string) => [
+            bufexists(v) && !!execute('bwipe! ' .. v),
+            delete(v)
+            ])
     # Why do we need to delete a possible buffer?{{{
     #
     # If a buffer exists, when we'll do `:e fname`, even if the file is deleted,
@@ -176,8 +179,8 @@ def CreateHydraHeads( #{{{2
         var code: string = cml
             .. ' '
             .. range(1, len(sets))
-            ->map((i: number): number => index(sets[i], cbn[i]))
-            ->join('')
+                ->map((j: number): number => index(sets[j], cbn[j]))
+                ->join('')
         var expanded_tmpl: string = GetExpandedTemplate(tmpl, cbns[i - 1])
 
         append('$', code)
@@ -216,12 +219,13 @@ def GetExpandedTemplate(tmpl: string, cbn: list<string>): string #{{{2
         #       bar %s
         #       baz     (no `%s` item)
         #}}}
-        ->map((j: number, v: string): string => v =~ '%s'
-            ? substitute(v, '%s', escape(cbn[j], '\~&'), '')
-            : v
-            )
+        ->map((i: number, v: string): string =>
+                  v =~ '%s'
+                ? v->substitute('%s', escape(cbn[i], '\~&'), '')
+                : v
+        )
     # join the texts and trim ending whitespace on each line
-    return join(texts, '')->substitute('\zs\s*\ze\%($\|\n\)', '', 'g')
+    return texts->join('')->substitute('\zs\s*\ze\%($\|\n\)', '', 'g')
 enddef
 
 def PrepareAnalysis(sets: list<list<string>>) #{{{2
@@ -232,11 +236,14 @@ def PrepareAnalysis(sets: list<list<string>>) #{{{2
     var ordinals: dict<string> = {1: '1st', 2: '2nd', 3: '3rd'}
     for a_set in sets
         var ordinal: string = i <= 3 ? ordinals[i] : i .. 'th'
-        append('$', ['## ' .. ordinal .. ' digit', ''])
-        (a_set
-            ->mapnew((j: number, v: string): string =>
-                '~' .. j .. '~  ' .. (empty(v) ? '∅' : v))
-        + [''])->append('$')
+
+        (
+            ['## ' .. ordinal .. ' digit', '']
+           + a_set->mapnew((j: number, v: string): string =>
+                                '~' .. j .. '~  ' .. (empty(v) ? '∅' : v))
+           + ['']
+        )->append('$')
+
         i += 1
     endfor
 
@@ -278,7 +285,7 @@ def Analyse() #{{{2
         # the observation is probably commented; try to guess what it is
         var cml: string = matchstr(obs, '\S\{1,2}\s')
         # remove it
-        obs = substitute(obs, '\%(^\|\n\)\zs' .. cml, '', 'g')
+        obs = obs->substitute('\%(^\|\n\)\zs' .. cml, '', 'g')
 
         # write the observation (and make it a title)
         var lines: list<string> = (c ? [''] : []) + ['## ' .. obs] + ['']
@@ -288,7 +295,7 @@ def Analyse() #{{{2
         # we split then join back to add a space between 2 consecutive digits
         var mcodes: list<list<string>> = codes
             ->mapnew((_, v: string): list<string> => split(v, '\zs'))
-        lines = mapnew(mcodes, (_, v: list<string>): string => join(v))
+        lines = mcodes->mapnew((_, v: list<string>): string => join(v))
         append('.', lines)
         exe ':+' .. len(lines)
 
@@ -308,8 +315,8 @@ def Analyse() #{{{2
         var transposed_codes: list<list<number>> = call(MatrixTransposition, [
             mcodes
                 ->mapnew((_, v: list<string>): list<number> =>
-                    v->mapnew((_, w: string): number => w->str2nr()))
-            ])
+                            v->mapnew((__, w: string): number => w->str2nr()))
+        ])
         # Get a list of boolean flags standing for the columns where there're invariants:{{{
         #
         #                           there are invariants on the 2nd and 4th LINES of the TRANSPOSED lists,
@@ -324,16 +331,13 @@ def Analyse() #{{{2
         #}}}
         var invariants: list<bool> = transposed_codes
             ->mapnew((_, v: list<number>): bool =>
-                v == deepcopy(v)->filter((_, w: number): bool => w == v[0]))
+                        v == deepcopy(v)->filter((__, w: number): bool => w == v[0]))
         # Translate every flag into a column index:{{{
         #
         #     [0, 1, 0, 1]  →  [0, 1, 0, 3]
         #}}}
         var minvariants: list<number> = invariants
-            ->mapnew((i: number, v: bool): number =>
-                v ? i + 1 : 0)
-            #             ├─┘{{{
-            #             └ Suppose the first column is an invariant.
+            # Suppose the first column is an invariant.{{{
             #
             # Its flag is on (value `1`).
             #
@@ -352,9 +356,11 @@ def Analyse() #{{{2
             # So,  we temporarily  offset the  index of  the columns  to the
             # right, to avoid the confusion later.
             #}}}
+            #                                                  vvv
+            ->mapnew((i: number, v: bool): number => v ? i + 1 : 0)
             # remove the columns where there's no invariant
             ->filter((_, v: number): bool => v != 0)
-            # cancel the offset (`+1`) we've introduced in the previous `map()`
+            # cancel the offset (`+ 1`) we've introduced in the previous `map()`
             ->map((_, v: number): number => v - 1)
 
         # add syntax highlighting for each column of identical digits
@@ -383,7 +389,10 @@ def CreateMatchInvariants(codes: list<list<string>>, invariants: list<number>) #
         var coords: list<list<number>> = range(fline, lline)
             ->mapnew((_, v: number): list<number> => [v, 2 * vcol + 1])
         for coord in coords
-            exe 'sil keepj keepp :%s/\%' .. coord[0] .. 'l\%' .. coord[1] .. 'v./\~&\~/e'
+            exe 'sil keepj keepp :%s'
+                .. '/\%' .. coord[0] .. 'l\%' .. coord[1] .. 'v.'
+                .. '/\~&\~'
+                .. '/e'
         endfor
     endfor
 enddef
