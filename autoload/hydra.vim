@@ -146,16 +146,18 @@ def AllCombinations(sets: list<list<string>>): list<list<string>> #{{{2
 enddef
 
 def EmptyDir() #{{{2
-    glob(DIR .. '/*', false, true)
-        ->mapnew((_, v: string) => [
-            bufexists(v) && !!execute('bwipe! ' .. v),
-            delete(v)
-            ])
+    DIR->readdir()
+       ->map((_, v: string): string => DIR .. '/' .. v)
+       ->mapnew((_, v: string) => [
+           bufexists(v) && !!execute('bwipe! ' .. v),
+           delete(v)
+           ])
     # Why do we need to delete a possible buffer?{{{
     #
     # If a buffer exists, when we'll do `:e fname`, even if the file is deleted,
     # Vim will load the buffer with its old undesired contents.
     #}}}
+    delete(DIR, 'd')
 enddef
 
 def CreateHydraHeads( #{{{2
@@ -197,7 +199,10 @@ def CreateHydraHeads( #{{{2
     endfor
 
     # populate arglist with all generated files
-    exe 'args ' .. glob(DIR .. '/head*' .. ext, false, true)->join()
+    exe 'args '
+    .. DIR->readdir((n: string): bool => n =~ '^head' && n =~ ext .. '$')
+          ->map((_, v: string): string => DIR .. '/' .. v)
+          ->join()
     first
 enddef
 
@@ -267,7 +272,9 @@ def Analyse() #{{{2
     # dictionary binding a list of codes to each observation
     var obs2codes: dict<list<string>>
     # iterate over the files such as `/run/user/1000/hydra/head01.ext`
-    var heads: list<string> = glob(DIR .. '/head*', false, true)
+    var heads: list<string> = DIR
+        ->readdir((n: string): bool => n =~ '^head')
+        ->map((_, v: string): string => DIR .. '/' .. v)
     for head in heads
         var an_obs: string
         var code: string
