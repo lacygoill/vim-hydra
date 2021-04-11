@@ -107,7 +107,7 @@ def GetDlmAddr(line1: number, line2: number): list<number> #{{{2
     # Make the code work  even if we added an unnecessary `---`  line at the end
     # of the range.
     if getline(line2) == '---'
-        dlm_addr[-1] = dlm_addr[-1] - 1
+        dlm_addr[-1] -= 1
     else
         dlm_addr += [line2]
     endif
@@ -148,10 +148,12 @@ enddef
 def EmptyDir() #{{{2
     DIR->readdir()
        ->map((_, v: string): string => DIR .. '/' .. v)
-       ->mapnew((_, v: string) => [
-           bufexists(v) && !!execute('bwipe! ' .. v),
+       ->mapnew((_, v: string) => {
+           if bufexists(v)
+               exe 'bwipe! ' .. v
+           endif
            delete(v)
-           ])
+        })
     # Why do we need to delete a possible buffer?{{{
     #
     # If a buffer exists, when we'll do `:e fname`, even if the file is deleted,
@@ -166,7 +168,7 @@ def CreateHydraHeads( #{{{2
     sets: list<list<string>>,
     arg_ext: string,
     cml: string
-    )
+)
 
     var ext: string = !empty(arg_ext) ? '.' .. arg_ext : ''
 
@@ -181,7 +183,7 @@ def CreateHydraHeads( #{{{2
         var code: string = cml
             .. ' '
             .. range(1, len(sets))
-                ->map((j: number): number => index(sets[j], cbn[j]))
+                ->map((j: number, _): number => index(sets[j], cbn[j]))
                 ->join('')
         var expanded_tmpl: string = GetExpandedTemplate(tmpl, cbns[i - 1])
 
@@ -191,7 +193,7 @@ def CreateHydraHeads( #{{{2
             cml .. ' Write your observation below (stop before ENDOBS):',
             cml .. ' ENDOBS',
             ''
-            ]
+        ]
         append('$', lines)
         expanded_tmpl->split('\n')->append('$')
         keepj :0d _
@@ -322,7 +324,7 @@ def Analyse() #{{{2
         var transposed_codes: list<list<number>> = call(MatrixTransposition, [
             mcodes
                 ->mapnew((_, v: list<string>): list<number> =>
-                            v->mapnew((__, w: string): number => w->str2nr()))
+                            v->mapnew((_, w: string): number => w->str2nr()))
         ])
         # Get a list of boolean flags standing for the columns where there're invariants:{{{
         #
@@ -338,7 +340,7 @@ def Analyse() #{{{2
         #}}}
         var invariants: list<bool> = transposed_codes
             ->mapnew((_, v: list<number>): bool =>
-                        v == deepcopy(v)->filter((__, w: number): bool => w == v[0]))
+                        v == deepcopy(v)->filter((_, w: number): bool => w == v[0]))
         # Translate every flag into a column index:{{{
         #
         #     [0, 1, 0, 1]  →  [0, 1, 0, 3]
@@ -379,7 +381,10 @@ def Analyse() #{{{2
     setl foldenable
 enddef
 
-def CreateMatchInvariants(codes: list<list<string>>, invariants: list<number>) #{{{2
+def CreateMatchInvariants( #{{{2
+    codes: list<list<string>>,
+    invariants: list<number>
+)
     # Add `~` characters around invariant digits, so that they are
     # syntax highlighted.
 
@@ -409,7 +414,7 @@ def GetObservationAndCode(head: string): list<string> #{{{2
     var code: string = matchstr(lines[0], '\d\+')
     var i: number = match(lines, 'Write your observation')
     var j: number = match(lines, 'ENDOBS$')
-    var an_obs: string = join(lines[i + 1 : j - 1], "\n")
+    var an_obs: string = lines[i + 1 : j - 1]->join("\n")
 
     # If the  user wrote `obs123`  as an observation,  expand it into  the 123th
     # observation.
