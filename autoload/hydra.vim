@@ -291,13 +291,14 @@ def Analyse() #{{{2
     # Write each observation noted in the heads files, as well as the associated
     # (syntax highlighted) codes.
     for [obs, codes] in items(obs2codes)
+        var o: string = obs
         # the observation is probably commented; try to guess what it is
-        var cml: string = matchstr(obs, '\S\{1,2}\s')
+        var cml: string = matchstr(o, '\S\{1,2}\s')
         # remove it
-        obs = obs->substitute('\%(^\|\n\)\zs' .. cml, '', 'g')
+        o = o->substitute('\%(^\|\n\)\zs' .. cml, '', 'g')
 
         # write the observation (and make it a title)
-        var lines: list<string> = (c ? [''] : []) + ['## ' .. obs] + ['']
+        var lines: list<string> = (c ? [''] : []) + ['## ' .. o] + ['']
         append('.', lines)
         exe ':+' .. len(lines)
         # write the list of codes below;
