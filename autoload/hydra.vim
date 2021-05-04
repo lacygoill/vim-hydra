@@ -16,10 +16,10 @@ def hydra#main(line1: number, line2: number) #{{{2
     var orig_id: number = win_getid()
     var view: dict<number> = winsaveview()
     var ext: string = expand('%:e')
-    var cml: string = matchstr(&l:cms, '\S*\ze\s*%s')
+    var cml: string = &cms->matchstr('\S*\ze\s*%s')
 
     var template: string = GetTemplate(line1)
-    if matchstr(template, '%s')->empty()
+    if template->matchstr('%s')->empty()
         Error('Provide a template')
         return
     endif
@@ -107,7 +107,7 @@ def GetDlmAddr(line1: number, line2: number): list<number> #{{{2
     # Make the code work  even if we added an unnecessary `---`  line at the end
     # of the range.
     if getline(line2) == '---'
-        dlm_addr[-1] -= 1
+        --dlm_addr[-1]
     else
         dlm_addr += [line2]
     endif
@@ -251,7 +251,7 @@ def PrepareAnalysis(sets: list<list<string>>) #{{{2
            + ['']
         )->append('$')
 
-        i += 1
+        ++i
     endfor
 
     var lines: list<string> =<< trim END
@@ -293,21 +293,21 @@ def Analyse() #{{{2
     for [obs, codes] in items(obs2codes)
         var o: string = obs
         # the observation is probably commented; try to guess what it is
-        var cml: string = matchstr(o, '\S\{1,2}\s')
+        var cml: string = o->matchstr('\S\{1,2}\s')
         # remove it
         o = o->substitute('\%(^\|\n\)\zs' .. cml, '', 'g')
 
         # write the observation (and make it a title)
         var lines: list<string> = (c ? [''] : []) + ['## ' .. o] + ['']
         append('.', lines)
-        exe ':+' .. len(lines)
+        cursor(line('.') + len(lines), 1)
         # write the list of codes below;
         # we split then join back to add a space between 2 consecutive digits
         var mcodes: list<list<string>> = codes
             ->mapnew((_, v: string): list<string> => split(v, '\zs'))
         lines = mcodes->mapnew((_, v: list<string>): string => join(v))
         append('.', lines)
-        exe ':+' .. len(lines)
+        cursor(line('.') + len(lines), 1)
 
         # if we  have only  1 code,  there can't be  any invariant,  and there's
         # nothing to syntax highlight
@@ -376,7 +376,7 @@ def Analyse() #{{{2
         # add syntax highlighting for each column of identical digits
         # those are interesting invariants
         CreateMatchInvariants(mcodes, minvariants)
-        c += 1
+        ++c
     endfor
     update
     setl foldenable
@@ -412,16 +412,17 @@ enddef
 
 def GetObservationAndCode(head: string): list<string> #{{{2
     var lines: list<string> = readfile(head)
-    var code: string = matchstr(lines[0], '\d\+')
-    var i: number = match(lines, 'Write your observation')
-    var j: number = match(lines, 'ENDOBS$')
+    var code: string = lines[0]->matchstr('\d\+')
+    var i: number = lines->match('Write your observation')
+    var j: number = lines->match('ENDOBS$')
     var an_obs: string = lines[i + 1 : j - 1]->join("\n")
 
     # If the  user wrote `obs123`  as an observation,  expand it into  the 123th
     # observation.
-    #                                       ┌ possible comment leader
-    #                                       ├─────────┐
-    var old_obs: number = matchstr(an_obs, '^.\{1,2}\s*obs\zs\d\+\ze\s*$')
+    var old_obs: number = an_obs
+        #           ┌ possible comment leader
+        #           ├─────────┐
+        ->matchstr('^.\{1,2}\s*obs\zs\d\+\ze\s*$')
         ->str2nr()
     #                              ┌ make sure `new_obs[old_obs - 1]` exists
     #                              │
