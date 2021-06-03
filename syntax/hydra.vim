@@ -5,7 +5,7 @@ endif
 syn region hydra_digit matchgroup=DiffAdd start='\~' end='\~' oneline concealends
 syn match hydra_section '^#.*'
 
-hi link hydra_digit   DiffAdd
-hi link hydra_section Title
+hi def link hydra_digit   DiffAdd
+hi def link hydra_section Title
 
 let b:current_syntax = 'hydra'
