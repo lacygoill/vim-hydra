@@ -76,11 +76,11 @@ var loaded = true
 #     return ''
 # endfu
 # ---
-# nolz
-# lz
+# nolazyredraw
+# lazyredraw
 # ---
-# nno        cd <cmd>call Func()<cr>
-# nno <expr> cd           Func()
+# nno        <F3> <cmd>call Func()<cr>
+# nno <expr> <F3>           Func()
 # ---
 #
 # redraw

@@ -1,3 +1,5 @@
+vim9script
+
 if exists('b:current_syntax')
     finish
 endif
@@ -8,4 +10,4 @@ syn match hydra_section '^#.*'
 hi def link hydra_digit   DiffAdd
 hi def link hydra_section Title
 
-let b:current_syntax = 'hydra'
+b:current_syntax = 'hydra'

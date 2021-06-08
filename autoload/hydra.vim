@@ -16,7 +16,7 @@ def hydra#main(line1: number, line2: number) #{{{2
     var orig_id: number = win_getid()
     var view: dict<number> = winsaveview()
     var ext: string = expand('%:e')
-    var cml: string = &cms->matchstr('\S*\ze\s*%s')
+    var cml: string = &commentstring->matchstr('\S*\ze\s*%s')
 
     var template: string = GetTemplate(line1)
     if template->matchstr('%s')->empty()
@@ -285,7 +285,8 @@ def Analyse() #{{{2
     endfor
 
     exe 'e ' .. ANALYSIS_FILE
-    setl nofoldenable nowrap
+    &l:foldenable = false
+    &l:wrap = false
     search('^# Observations', 'c')
     var c: number = 0
     # Write each observation noted in the heads files, as well as the associated
@@ -379,7 +380,7 @@ def Analyse() #{{{2
         ++c
     endfor
     update
-    setl foldenable
+    &l:foldenable = true
 enddef
 
 def CreateMatchInvariants( #{{{2
