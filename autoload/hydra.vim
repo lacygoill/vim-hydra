@@ -196,7 +196,7 @@ def CreateHydraHeads( #{{{2
         ]
         append('$', lines)
         expanded_tmpl->split('\n')->append('$')
-        keepj :0d _
+        keepj :0 d _
         update
     endfor
 
@@ -264,7 +264,7 @@ def PrepareAnalysis(sets: list<list<string>>) #{{{2
     END
     append('$', lines)
 
-    keepj :0d _
+    keepj :0 d _
     update
 
     com! -bar -buffer -range=% HydraAnalyse Analyse()
@@ -403,7 +403,7 @@ def CreateMatchInvariants( #{{{2
         var coords: list<list<number>> = range(fline, lline)
             ->mapnew((_, v: number): list<number> => [v, 2 * vcol + 1])
         for coord in coords
-            exe 'sil keepj keepp :%s'
+            exe 'sil keepj keepp :% s'
                 .. '/\%' .. coord[0] .. 'l\%' .. coord[1] .. 'v.'
                 .. '/\~&\~'
                 .. '/e'
