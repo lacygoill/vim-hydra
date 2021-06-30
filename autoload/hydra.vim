@@ -65,9 +65,9 @@ def hydra#main(line1: number, line2: number) #{{{2
     CreateHydraHeads(template, cbns, sets, ext, cml)
     PrepareAnalysis(sets)
     # load head file
-    e %%
+    edit %%
     # split window vertically, and load analysis file
-    vs %%
+    vsplit %%
     # get back to head file
     wincmd p
     win_execute(orig_id, 'winrestview(' .. string(view) .. ')')
@@ -91,7 +91,7 @@ enddef
 
 def Error(msg: string) #{{{2
     echohl ErrorMsg
-    echom msg
+    echomsg msg
     echohl NONE
 enddef
 
@@ -150,14 +150,14 @@ def EmptyDir() #{{{2
        ->map((_, v: string): string => DIR .. '/' .. v)
        ->mapnew((_, v: string) => {
            if bufexists(v)
-               exe 'bwipe! ' .. v
+               execute 'bwipe! ' .. v
            endif
            delete(v)
         })
     # Why do we need to delete a possible buffer?{{{
     #
-    # If a buffer exists, when we'll do `:e fname`, even if the file is deleted,
-    # Vim will load the buffer with its old undesired contents.
+    # If a  buffer exists,  when we'll  do `:edit  fname`, even  if the  file is
+    # deleted, Vim will load the buffer with its old undesired contents.
     #}}}
     delete(DIR, 'd')
 enddef
@@ -173,10 +173,11 @@ def CreateHydraHeads( #{{{2
     var ext: string = !empty(arg_ext) ? '.' .. arg_ext : ''
 
     for i in range(1, len(cbns))
-        #                             ┌ padding of `0`, so that the filenames are sorted as expected
-        #                             │ when there are more than 10 possible combinations
-        #                             │
-        exe 'e ' .. DIR .. '/head' .. repeat('0', len(cbns)->len() - len(i)) .. i .. ext
+        execute 'edit ' .. DIR .. '/head'
+            # padding of  `0`, so  that the  filenames are  sorted as  expected when
+            # there are more than 10 possible combinations
+            .. repeat('0', len(cbns)->len() - len(i))
+            .. i .. ext
         var cbn: list<string> = cbns[i - 1]
         # compute a code standing for the current combination
         # sth like 1010
@@ -196,12 +197,12 @@ def CreateHydraHeads( #{{{2
         ]
         append('$', lines)
         expanded_tmpl->split('\n')->append('$')
-        keepj :0 d _
+        keepjumps :0 delete _
         update
     endfor
 
     # populate arglist with all generated files
-    exe 'args '
+    execute 'args '
     .. DIR->readdir((n: string): bool => n =~ '^head' && n =~ ext .. '$')
           ->map((_, v: string): string => DIR .. '/' .. v)
           ->join()
@@ -236,7 +237,7 @@ def GetExpandedTemplate(tmpl: string, cbn: list<string>): string #{{{2
 enddef
 
 def PrepareAnalysis(sets: list<list<string>>) #{{{2
-    exe 'e ' .. ANALYSIS_FILE
+    execute 'edit ' .. ANALYSIS_FILE
 
     append('$', '# Code meaning')
     var i: number = 1
@@ -264,10 +265,10 @@ def PrepareAnalysis(sets: list<list<string>>) #{{{2
     END
     append('$', lines)
 
-    keepj :0 d _
+    keepjumps :0 delete _
     update
 
-    com! -bar -buffer -range=% HydraAnalyse Analyse()
+    command! -bar -buffer -range=% HydraAnalyse Analyse()
 enddef
 
 def Analyse() #{{{2
@@ -284,7 +285,7 @@ def Analyse() #{{{2
         obs2codes[an_obs] = get(obs2codes, an_obs, []) + [code]
     endfor
 
-    exe 'e ' .. ANALYSIS_FILE
+    execute 'edit ' .. ANALYSIS_FILE
     &l:foldenable = false
     &l:wrap = false
     search('^# Observations', 'c')
@@ -403,7 +404,7 @@ def CreateMatchInvariants( #{{{2
         var coords: list<list<number>> = range(fline, lline)
             ->mapnew((_, v: number): list<number> => [v, 2 * vcol + 1])
         for coord in coords
-            exe 'sil keepj keepp :% s'
+            execute 'silent keepjumps keeppatterns :% substitute'
                 .. '/\%' .. coord[0] .. 'l\%' .. coord[1] .. 'v.'
                 .. '/\~&\~'
                 .. '/e'

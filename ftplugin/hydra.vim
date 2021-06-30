@@ -20,6 +20,6 @@ b:did_ftplugin = true
 
 # Teardown {{{1
 
-b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe')
-    .. '| unlet! b:title_like_in_markdown | delc HydraAnalyse'
+b:undo_ftplugin = get(b:, 'undo_ftplugin', 'execute')
+    .. '| unlet! b:title_like_in_markdown | delcommand HydraAnalyse'
 

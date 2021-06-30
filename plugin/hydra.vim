@@ -17,7 +17,7 @@ var loaded = true
 # To improve a  little, you could tweak  your zsh snippet, and the  tip given in
 # the documentation of this file:
 #
-#     for f in /run/user/1000/vim/hydra/head*.vim; do vim -Nu "$f" + "echom '$f'"; \
+#     for f in /run/user/1000/vim/hydra/head*.vim; do vim -Nu "$f" + "echomsg '$f'"; \
 #         if [[ $? != 0 ]]; then break; fi; done
 #
 # The idea is that  you could install a `C-a` mapping in  a Vim instance started
@@ -70,17 +70,17 @@ var loaded = true
 #
 # set %s
 # %s
-# fu Func() abort
+# function Func() abort
 #     %s
 #     %s
 #     return ''
-# endfu
+# endfunction
 # ---
 # nolazyredraw
 # lazyredraw
 # ---
-# nno        <F3> <cmd>call Func()<cr>
-# nno <expr> <F3>           Func()
+# nnoremap        <F3> <Cmd>call Func()<CR>
+# nnoremap <expr> <F3>           Func()
 # ---
 #
 # redraw
@@ -106,13 +106,13 @@ var loaded = true
 #
 # Tip: To test more quickly, run this shell command:
 #
-#     for f in /run/user/1000/vim/hydra/head*.vim; do vim -Nu "$f" + "echom '$f'"; \
+#     for f in /run/user/1000/vim/hydra/head*.vim; do vim -Nu "$f" + "echomsg '$f'"; \
 #         if [[ $? != 0 ]]; then break; fi; done
 #
 # The loop will start Vim once for each `headXX.vim` file, sourcing the latter.
 # Make your  test and quit with  `ZZ`.  If something  is wrong, and you  want to
-# cancel the remaining tests, quit with `:cq`.
+# cancel the remaining tests, quit with `:cquit`.
 
 # Commands {{{1
 
-com -bar -range=% Hydra hydra#main(<line1>, <line2>)
+command -bar -range=% Hydra hydra#main(<line1>, <line2>)

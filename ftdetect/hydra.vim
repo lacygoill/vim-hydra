@@ -1,3 +1,3 @@
 vim9script noclear
 
-au BufRead,BufNewFile *.hydra setf hydra
+autocmd BufRead,BufNewFile *.hydra setfiletype hydra
