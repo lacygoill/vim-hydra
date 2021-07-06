@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 # Init {{{1
 
 import MatrixTransposition from 'lg/math.vim'
@@ -147,7 +144,7 @@ enddef
 
 def EmptyDir() #{{{2
     DIR->readdir()
-       ->map((_, v: string): string => DIR .. '/' .. v)
+       ->map((_, v: string) => DIR .. '/' .. v)
        ->mapnew((_, v: string) => {
            if bufexists(v)
                execute 'bwipe! ' .. v
@@ -204,7 +201,7 @@ def CreateHydraHeads( #{{{2
     # populate arglist with all generated files
     execute 'args '
     .. DIR->readdir((n: string): bool => n =~ '^head' && n =~ ext .. '$')
-          ->map((_, v: string): string => DIR .. '/' .. v)
+          ->map((_, v: string) => DIR .. '/' .. v)
           ->join()
     first
 enddef
@@ -227,7 +224,7 @@ def GetExpandedTemplate(tmpl: string, cbn: list<string>): string #{{{2
         #       bar %s
         #       baz     (no `%s` item)
         #}}}
-        ->map((i: number, v: string): string =>
+        ->map((i: number, v: string) =>
                   v =~ '%s'
                 ? v->substitute('%s', escape(cbn[i], '\~&'), '')
                 : v
@@ -247,7 +244,7 @@ def PrepareAnalysis(sets: list<list<string>>) #{{{2
 
         (
             ['## ' .. ordinal .. ' digit', '']
-           + a_set->mapnew((j: number, v: string): string =>
+           + a_set->mapnew((j: number, v: string) =>
                                 '~' .. j .. '~  ' .. (empty(v) ? '∅' : v))
            + ['']
         )->append('$')
@@ -277,7 +274,7 @@ def Analyse() #{{{2
     # iterate over the files such as `/run/user/1000/hydra/head01.ext`
     var heads: list<string> = DIR
         ->readdir((n: string): bool => n =~ '^head')
-        ->map((_, v: string): string => DIR .. '/' .. v)
+        ->map((_, v: string) => DIR .. '/' .. v)
     for head in heads
         var an_obs: string
         var code: string
@@ -292,7 +289,7 @@ def Analyse() #{{{2
     var c: number = 0
     # Write each observation noted in the heads files, as well as the associated
     # (syntax highlighted) codes.
-    for [obs, codes] in items(obs2codes)
+    for [obs, codes] in obs2codes->items()
         var o: string = obs
         # the observation is probably commented; try to guess what it is
         var cml: string = o->matchstr('\S\{1,2}\s')
@@ -373,7 +370,7 @@ def Analyse() #{{{2
             # remove the columns where there's no invariant
             ->filter((_, v: number): bool => v != 0)
             # cancel the offset (`+ 1`) we've introduced in the previous `map()`
-            ->map((_, v: number): number => v - 1)
+            ->map((_, v: number) => v - 1)
 
         # add syntax highlighting for each column of identical digits
         # those are interesting invariants

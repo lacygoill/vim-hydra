@@ -70,11 +70,11 @@ var loaded = true
 #
 # set %s
 # %s
-# function Func() abort
+# def g:Func(): string
 #     %s
 #     %s
 #     return ''
-# endfunction
+# enddef
 # ---
 # nolazyredraw
 # lazyredraw
@@ -84,10 +84,10 @@ var loaded = true
 # ---
 #
 # redraw
-# call timer_start(5, {-> execute('redraw', '')})
+# timer_start(5, (_) => execute('redraw', ''))
 # ---
 # echo 'hello'
-# call timer_start(0, {-> execute('echo "hello"', '')})
+# timer_start(0, (_) => execute('echo "hello"', ''))
 #
 # Example2:
 #
