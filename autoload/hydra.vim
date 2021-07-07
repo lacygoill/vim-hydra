@@ -114,7 +114,7 @@ enddef
 
 def GetSets(dlm_addr: list<number>): list<list<string>> #{{{2
     var sets: list<list<string>>
-    for i in range(1, len(dlm_addr) - 1)
+    for i: number in range(1, len(dlm_addr) - 1)
         var set: list<string> = getline(dlm_addr[i - 1], dlm_addr[i])
             ->filter((_, v: string): bool => v != '---')
         sets += [set]
@@ -125,17 +125,15 @@ enddef
 def AllCombinations(sets: list<list<string>>): list<list<string>> #{{{2
     var cbns: list<list<string>>
     if len(sets) == 2
-        for i in sets[0]
-            for j in sets[1]
+        for i: string in sets[0]
+            for j: string in sets[1]
                 cbns += [[i, j]]
-                #         ^ string
             endfor
         endfor
     else
-        for i in sets[0]
-            for j in AllCombinations(sets[1 :])
+        for i: string in sets[0]
+            for j: list<string> in AllCombinations(sets[1 :])
                 cbns += [[i] + j]
-                #        ^^^ list containing a string
             endfor
         endfor
     endif
@@ -169,7 +167,7 @@ def CreateHydraHeads( #{{{2
 
     var ext: string = !empty(arg_ext) ? '.' .. arg_ext : ''
 
-    for i in range(1, len(cbns))
+    for i: number in range(1, len(cbns))
         execute 'edit ' .. DIR .. '/head'
             # padding of  `0`, so  that the  filenames are  sorted as  expected when
             # there are more than 10 possible combinations
@@ -239,7 +237,7 @@ def PrepareAnalysis(sets: list<list<string>>) #{{{2
     append('$', '# Code meaning')
     var i: number = 1
     var ordinals: dict<string> = {1: '1st', 2: '2nd', 3: '3rd'}
-    for a_set in sets
+    for a_set: list<string> in sets
         var ordinal: string = i <= 3 ? ordinals[i] : i .. 'th'
 
         (
@@ -275,7 +273,7 @@ def Analyse() #{{{2
     var heads: list<string> = DIR
         ->readdir((n: string): bool => n =~ '^head')
         ->map((_, v: string) => DIR .. '/' .. v)
-    for head in heads
+    for head: string in heads
         var an_obs: string
         var code: string
         [an_obs, code] = GetObservationAndCode(head)
@@ -289,7 +287,7 @@ def Analyse() #{{{2
     var c: number = 0
     # Write each observation noted in the heads files, as well as the associated
     # (syntax highlighted) codes.
-    for [obs, codes] in obs2codes->items()
+    for [obs: string, codes: list<string>] in obs2codes->items()
         var o: string = obs
         # the observation is probably commented; try to guess what it is
         var cml: string = o->matchstr('\S\{1,2}\s')
@@ -397,10 +395,10 @@ def CreateMatchInvariants( #{{{2
     # We don't  want to re-compute  this position,  so we process  the invariant
     # digits in reverse order.
     #}}}
-    for vcol in reverse(invariants)
+    for vcol: number in reverse(invariants)
         var coords: list<list<number>> = range(fline, lline)
             ->mapnew((_, v: number): list<number> => [v, 2 * vcol + 1])
-        for coord in coords
+        for coord: list<number> in coords
             execute 'silent keepjumps keeppatterns :% substitute'
                 .. '/\%' .. coord[0] .. 'l\%' .. coord[1] .. 'v.'
                 .. '/\~&\~'
